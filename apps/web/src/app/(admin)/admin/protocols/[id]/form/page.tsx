@@ -8,7 +8,7 @@ import { checkRole } from '@/lib/check-role';
 
 export const dynamic = 'force-dynamic';
 
-export default async function ProtocolFormPage({ params }: { params: { id: string } }) {
+export default async function ProtocolFormPage({ params }: { params: Promise<{ id: string }> }) {
     await checkRole('ADMIN');
     const { id } = await params;
 

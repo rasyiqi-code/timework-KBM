@@ -11,7 +11,7 @@ import { checkRole } from '@/lib/check-role';
 
 export const dynamic = 'force-dynamic';
 
-export default async function ProtocolDetailPage({ params }: { params: { id: string } }) {
+export default async function ProtocolDetailPage({ params }: { params: Promise<{ id: string }> }) {
     await checkRole('ADMIN');
     // Await params first (Next.js 15 requirement for dynamic routes)
     const { id } = await params;

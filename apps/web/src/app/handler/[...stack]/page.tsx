@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import { StackHandler } from "@stackframe/stack";
 import { stackServerApp } from "../../../stack";
 
-export default async function Handler(props: { params: Promise<{ stack: string[] }> | { stack: string[] }, searchParams: unknown }) {
+export default async function Handler(props: { params: Promise<{ stack: string[] }>, searchParams: Promise<unknown> }) {
     // Await params for Next.js 15 compatibility
     const params = await props.params;
     const stackPath = params.stack || [];

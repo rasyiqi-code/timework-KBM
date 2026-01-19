@@ -12,7 +12,7 @@ import { ProjectFilesClient } from '@/components/file/ProjectFilesClient';
 export const dynamic = 'force-dynamic';
 
 // Force rebuild
-export default async function ProjectFilesPage({ params }: { params: { id: string } }) {
+export default async function ProjectFilesPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
     const project = await getProjectById(id);
     const users = await getUsers();
