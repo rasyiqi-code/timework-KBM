@@ -1,0 +1,431 @@
+
+export type Dictionary = typeof dictionaries.id;
+
+export const dictionaries = {
+    id: {
+        common: {
+            add: 'Tambah',
+            cancel: 'Batal',
+            save: 'Simpan',
+            delete: 'Hapus',
+            edit: 'Ubah',
+            loading: 'Memuat...',
+            error: 'Terjadi kesalahan',
+            select: 'Pilih',
+        },
+        nav: {
+            brand: 'Timework',
+            features: 'Fitur',
+            howItWorks: 'Cara Kerja',
+            faq: 'FAQ',
+            projects: 'Proyek',
+            myTasks: 'Tugas Saya',
+            protocols: 'Protokol',
+            superAdmin: 'Super Admin',
+            signIn: 'Masuk',
+            signOut: 'Keluar',
+            getStarted: 'Mulai Sekarang',
+            projectForm: 'Formulir Proyek',
+        },
+        protocol: {
+            titlePlaceholder: 'Ketik judul tugas baru...',
+            daysPlaceholder: 'Hari',
+            noAssignee: 'Tanpa Penanggung Jawab',
+            add: 'Tambah',
+            noSteps: 'Belum ada langkah. Tambahkan tugas pertama di atas.',
+            loginTip: '*User wajib login sekali untuk muncul.',
+            sidebar: {
+                menuTitle: 'Menu Protokol',
+                workflow: 'Alur Kerja ({steps})',
+                form: 'Formulir Input',
+                tipsTitle: 'Tips Pro',
+                tip1: 'Gunakan <b>kurung kurawal</b> seperti <code>{author}</code> pada Pola Judul untuk pengisian otomatis.',
+                tip2: 'Tambahkan opsi <b>"Custom"</b> di Dropdown agar user bisa mengetik nilai sendiri.',
+                tip3: 'Gunakan <b>Hidden</b> pada field yang ingin diisi otomatis tapi disembunyikan dari user.'
+            }
+        },
+        project: {
+            title: 'Proyek Aktif',
+            subtitle: 'Pantau progres dan kelola alur kerja tim Anda.',
+            newProject: 'Proyek Baru',
+            createTitle: 'Buat Proyek Baru',
+            nameLabel: 'Nama Proyek',
+            protocolLabel: 'Pilih Protokol (Template)',
+            cancel: 'Batal',
+            create: 'Buat Proyek',
+            noProjects: 'Belum ada proyek',
+            noProjectsDesc: 'Mulai dengan membuat proyek pertama Anda dari template protokol.',
+            updated: 'Diperbarui',
+            tasks: 'Tugas',
+            fastTrack: 'Mode Cepat (Satuan)',
+            fastTrackDesc: 'Alur kerja yang disederhanakan untuk pesanan satuan.',
+            markDone: 'Tandai Selesai',
+            endOfWorkflow: 'Akhir Alur Kerja',
+            loadMore: 'Muat Lebih Banyak',
+            loadingMore: 'Memuat...',
+            deleteConfirm: 'Apakah Anda yakin ingin menghapus proyek ini? Tindakan ini tidak dapat dibatalkan.',
+            deleteSuccess: 'Proyek berhasil dihapus',
+            deleteError: 'Gagal menghapus proyek',
+            status: {
+                ACTIVE: 'Aktif',
+                COMPLETED: 'Selesai',
+                LOCKED: 'Terkunci',
+                IN_PROGRESS: 'Sedang Dikerjakan',
+                DONE: 'Selesai',
+                OPEN: 'Terbuka'
+            },
+            detail: {
+                project: 'Proyek',
+                progress: 'Progres',
+                tasksCompleted: 'tugas selesai',
+                back: 'Kembali',
+                settings: 'Aksi',
+                teamMembers: 'Anggota Tim',
+                noDescription: 'Tidak ada deskripsi.',
+                activityLog: 'Log Aktivitas',
+                take: 'Ambil',
+                reopen: 'Buka Kembali',
+                done: 'Selesai',
+                lockAssignments: 'Kunci Penugasan',
+                unlockAssignments: 'Buka Kunci Penugasan',
+                waitsFor: 'Menunggu:',
+                noDetails: 'Tidak ada detail',
+                clickToExpand: 'Klik untuk melihat detail',
+                clickToCollapse: 'Klik untuk menutup',
+                descriptionPlaceholder: 'Deskripsi...',
+            }
+        },
+        formBuilder: {
+            title: 'Pengaturan Formulir Proyek',
+            subtitle: 'Sesuaikan field data yang diperlukan saat membuat proyek baru.',
+            addField: 'Tambah Field',
+            save: 'Simpan Template',
+            saving: 'Menyimpan...',
+            label: 'Label',
+            key: 'Key (ID)',
+            type: 'Tipe',
+            required: 'Wajib Diisi',
+            options: 'Opsi (pisahkan koma)',
+            remove: 'Hapus Field',
+            types: {
+                text: 'Teks Pendek',
+                number: 'Angka',
+                select: 'Pilihan (Dropdown)',
+                date: 'Tanggal',
+                checkboxGroup: 'Checkbox Group'
+            },
+            placeholders: {
+                label: 'Contoh: Nama Lengkap',
+                key: 'Contoh: full_name',
+                options: 'Opsi A, Opsi B, Opsi C'
+            },
+            validation: {
+                empty: 'Semua field harus memiliki Label dan Key (ID)',
+                success: 'Template formulir berhasil disimpan',
+                error: 'Gagal menyimpan template formulir'
+            }
+        },
+        protocolLibrary: {
+            title: 'Pustaka Protokol',
+            subtitle: 'Standarisasi alur kerja Anda dengan template yang dapat digunakan kembali.',
+            createTitle: 'Buat Protokol Baru',
+            nameLabel: 'Nama',
+            namePlaceholder: 'Contoh: Standar Cetak Buku',
+            descLabel: 'Deskripsi',
+            descPlaceholder: 'Deskripsi protokol...',
+            createButton: 'Buat Protokol',
+            noProtocols: 'Tidak ada protokol ditemukan. Buat satu untuk memulai.',
+            steps: 'Langkah',
+            noDesc: 'Tidak ada deskripsi.',
+            updated: 'Update:',
+        },
+        myTasks: {
+            title: 'Tugas Aktif Saya',
+            subtitle: 'Halo {name}, Anda memiliki {count} tugas aktif.',
+            allCaughtUp: 'Semua beres!',
+            noActiveTasks: 'Tidak ada tugas aktif yang diberikan kepada Anda.',
+            openProject: 'Buka Proyek →'
+        },
+        home: {
+            badge: 'v1.0 sekarang live',
+            title: 'Sistem Kerja Otomatis.',
+            titleHighlight: 'Tanpa Drama Koordinasi.',
+            subtitle: 'Timework menghubungkan tugas dalam rangkaian cerdas. Saat satu tugas selesai, tugas berikutnya terbuka otomatis. Bye-bye meeting status update.',
+            openProjects: 'Mulai Sekarang',
+            viewProtocols: 'Lihat Contoh',
+            features: {
+                title: 'Sistem Kerja Cerdas',
+                subtitle: 'Semua yang Anda butuhkan untuk menyelesaikan proyek lebih cepat.',
+                standardized: {
+                    title: 'Protokol Anti Lupa',
+                    desc: 'Ubah SOP rumit menjadi template checklist yang mustahil dilewatkan.'
+                },
+                dependencies: {
+                    title: 'Kunci & Buka Otomatis',
+                    desc: 'Jangan kerjakan langkah B sebelum A selesai. Sistem yang menjaga urutan kerja Anda.'
+                },
+                parallel: {
+                    title: 'Kerja Paralel',
+                    desc: 'Semua orang tahu apa yang harus dikerjakan sekarang, tanpa perlu ditanya.'
+                }
+            },
+            howItWorks: {
+                title: 'Cara Kerja',
+                subtitle: 'Sederhana, namun powerful.',
+                steps: {
+                    define: {
+                        title: '1. Definisikan',
+                        desc: 'Buat template protokol sekali saja. Tentukan langkah dan ketergantungan.'
+                    },
+                    execute: {
+                        title: '2. Eksekusi',
+                        desc: 'Mulai proyek dari template. Tim langsung mendapatkan tugas mereka.'
+                    },
+                    automate: {
+                        title: '3. Otomatisasi',
+                        desc: 'Sistem membuka tugas selanjutnya secara otomatis saat prasyarat terpenuhi.'
+                    }
+                }
+            },
+            faq: {
+                title: 'Pertanyaan Umum',
+                items: {
+                    free: {
+                        q: 'Apakah ini gratis?',
+                        a: 'Ya, Timework gratis untuk penggunaan individu dan tim kecil. Kami ingin membantu Anda bekerja lebih efisien.'
+                    },
+                    team: {
+                        q: 'Bisakah saya mengundang tim?',
+                        a: 'Tentu saja. Anda dapat mengundang anggota tim tanpa batas ke dalam proyek Anda.'
+                    },
+                    limit: {
+                        q: 'Apakah ada batasan proyek?',
+                        a: 'Saat ini tidak ada batasan jumlah proyek yang dapat Anda buat.'
+                    }
+                }
+            },
+            footer: {
+                brand: 'Timework',
+                desc: 'Standar baru untuk operasional tim.',
+                copyright: '© 2024 Timework. All rights reserved.',
+                links: {
+                    twitter: 'Twitter',
+                    github: 'GitHub'
+                }
+            }
+        },
+    },
+    en: {
+        common: {
+            add: 'Add',
+            cancel: 'Cancel',
+            save: 'Save',
+            delete: 'Delete',
+            edit: 'Edit',
+            loading: 'Loading...',
+            error: 'Something went wrong',
+            select: 'Select',
+        },
+        nav: {
+            brand: 'Timework',
+            features: 'Features',
+            howItWorks: 'How it Works',
+            faq: 'FAQ',
+            projects: 'Projects',
+            myTasks: 'My Tasks',
+            protocols: 'Protocols',
+            superAdmin: 'Super Admin',
+            signIn: 'Sign In',
+            signOut: 'Sign Out',
+            getStarted: 'Get Started',
+            projectForm: 'Project Form',
+        },
+        protocol: {
+            titlePlaceholder: 'Type new task title...',
+            daysPlaceholder: 'Days',
+            noAssignee: 'No Assignee',
+            add: 'Add',
+            noSteps: 'No steps defined. Add the first task above.',
+            loginTip: '*User must login once to appear.',
+            sidebar: {
+                menuTitle: 'Protocol Menu',
+                workflow: 'Workflow ({steps})',
+                form: 'Intake Form',
+                tipsTitle: 'Pro Tips',
+                tip1: 'Use <b>curly braces</b> like <code>{author}</code> in the Title Pattern to auto-fill project names.',
+                tip2: 'Add <b>"Custom"</b> as an option in Dropdowns to let users type their own value.',
+                tip3: 'Toggle <b>Hidden</b> on fields you want to pre-fill logically but hide from users (advanced).'
+            }
+        },
+        protocolLibrary: {
+            title: 'Protocol Library',
+            subtitle: 'Standardize your workflows with reusable templates.',
+            createTitle: 'Create New Protocol',
+            nameLabel: 'Name',
+            namePlaceholder: 'e.g., Book Printing Standard',
+            descLabel: 'Description',
+            descPlaceholder: 'Protocol description...',
+            createButton: 'Create Protocol',
+            noProtocols: 'No protocols found. Create one to get started.',
+            steps: 'Steps',
+            noDesc: 'No description provided.',
+            updated: 'Upd:',
+        },
+        project: {
+            title: 'Active Projects',
+            subtitle: "Track progress and manage your team's workflow.",
+            newProject: 'New Project',
+            createTitle: 'Create New Project',
+            nameLabel: 'Project Name',
+            protocolLabel: 'Select Protocol (Template)',
+            cancel: 'Cancel',
+            create: 'Create Project',
+            noProjects: 'No projects yet',
+            noProjectsDesc: 'Get started by creating your first project from a protocol template.',
+            updated: 'Updated',
+            tasks: 'Tasks',
+            fastTrack: 'Fast Track Mode',
+            fastTrackDesc: 'Simplified workflow for Satuan orders.',
+            markDone: 'Mark Done',
+            endOfWorkflow: 'End of Workflow',
+            loadMore: 'Load More Projects',
+            loadingMore: 'Loading...',
+            deleteConfirm: 'Are you sure you want to delete this project? This cannot be undone.',
+            deleteSuccess: 'Project deleted',
+            deleteError: 'Failed to delete project',
+            status: {
+                ACTIVE: 'Active',
+                COMPLETED: 'Completed',
+                LOCKED: 'Locked',
+                IN_PROGRESS: 'In Progress',
+                DONE: 'Done',
+                OPEN: 'Open'
+            },
+            detail: {
+                project: 'Project',
+                progress: 'Progress',
+                tasksCompleted: 'tasks completed',
+                back: 'Back',
+                settings: 'Action',
+                teamMembers: 'Team Members',
+                noDescription: 'No description provided.',
+                activityLog: 'Activity Log',
+                take: 'Take',
+                reopen: 'Reopen',
+                done: 'Done',
+                lockAssignments: 'Lock Assignments',
+                unlockAssignments: 'Unlock Assignments',
+                waitsFor: 'Waits for:',
+                noDetails: 'No details',
+                clickToExpand: 'Click to expand details',
+                clickToCollapse: 'Click to collapse',
+                descriptionPlaceholder: 'Description...',
+            }
+        },
+        formBuilder: {
+            title: 'Project Form Settings',
+            subtitle: 'Customize the data fields required when creating a new project.',
+            addField: 'Add Field',
+            save: 'Save Template',
+            saving: 'Saving...',
+            label: 'Label',
+            key: 'Key (ID)',
+            type: 'Type',
+            required: 'Required Field',
+            options: 'Options (comma separated)',
+            remove: 'Remove Field',
+            types: {
+                text: 'Text Input',
+                number: 'Number Input',
+                select: 'Dropdown (Select)',
+                date: 'Date Picker',
+                checkboxGroup: 'Checkbox Group'
+            },
+            placeholders: {
+                label: 'e.g. Full Name',
+                key: 'e.g. full_name',
+                options: 'Option A, Option B, Option C'
+            },
+            validation: {
+                empty: 'All fields must have a Label and a Key (ID)',
+                success: 'Form template saved successfully',
+                error: 'Failed to save form template'
+            }
+        },
+        myTasks: {
+            title: 'My Active Tasks',
+            subtitle: 'Hello {name}, you have {count} active items on your deck.',
+            allCaughtUp: 'All caught up!',
+            noActiveTasks: 'No active tasks assigned to you.',
+            openProject: 'Open Project →'
+        },
+        home: {
+            badge: 'v1.0 is now live',
+            title: 'Automated Operations.',
+            titleHighlight: 'Zero Coordination.',
+            subtitle: 'Timework turns your SOPs into executable protocols. When one step finishes, the next unlocks automatically. No more checking in.',
+            openProjects: 'Start Shipping',
+            viewProtocols: 'See Examples',
+            features: {
+                title: 'Supercharge your workflow',
+                subtitle: 'Everything you need to ship projects faster, all in one place.',
+                standardized: {
+                    title: 'Impossible to Forget',
+                    desc: 'Complex workflows become simple checklists. Ensure quality without micromanagement.'
+                },
+                dependencies: {
+                    title: 'Auto-Unlock',
+                    desc: 'Tasks remain locked until prerequisites are met. Prevents skipping steps and confusion.'
+                },
+                parallel: {
+                    title: 'Visual Progress',
+                    desc: 'See exactly where every project is stuck. Eliminate bottlenecks instantly.'
+                }
+            },
+            howItWorks: {
+                title: 'How it Works',
+                subtitle: 'Simple, yet powerful.',
+                steps: {
+                    define: {
+                        title: '1. Define',
+                        desc: 'Create a protocol template once. Set steps and dependencies.'
+                    },
+                    execute: {
+                        title: '2. Execute',
+                        desc: 'Start a project from the template. Your team gets assigned instantly.'
+                    },
+                    automate: {
+                        title: '3. Automate',
+                        desc: 'The system unlocks the next tasks automatically when prerequisites are met.'
+                    }
+                }
+            },
+            faq: {
+                title: 'Frequently Asked Questions',
+                items: {
+                    free: {
+                        q: 'Is it free?',
+                        a: 'Yes, Timework is free for individuals and small teams. We want to help you work efficiently.'
+                    },
+                    team: {
+                        q: 'Can I invite my team?',
+                        a: 'Absolutely. You can invite unlimited team members to your projects.'
+                    },
+                    limit: {
+                        q: 'Are there project limits?',
+                        a: 'There are currently no limits on the number of projects you can create.'
+                    }
+                }
+            },
+            footer: {
+                brand: 'Timework',
+                desc: 'The new standard for team operations.',
+                copyright: '© 2024 Timework. All rights reserved.',
+                links: {
+                    twitter: 'Twitter',
+                    github: 'GitHub'
+                }
+            }
+        }
+    }
+};

@@ -1,0 +1,129 @@
+import type { Metadata, Viewport } from "next";
+import { GeistSans } from "geist/font/sans";
+import { GeistMono } from "geist/font/mono";
+import "./globals.css";
+import { Navbar } from "@/components/layout/Navbar";
+import { ThemeProvider } from "@/components/theme/ThemeProvider";
+import { StackProvider, StackTheme } from "@stackframe/stack";
+import { stackServerApp } from "@/stack";
+
+export const viewport: Viewport = {
+  themeColor: "#4f46e5",
+};
+
+export const metadata: Metadata = {
+  title: {
+    default: "Timework | Protocol-Driven Project Management",
+    template: "%s | Timework",
+  },
+  description: "Timework is the enterprise-standard project management platform built for protocol-driven workflows. Streamline your operations with precision and clarity.",
+  keywords: ["Project Management", "Protocol", "Enterprise", "SaaS", "Workflow", "Productivity", "Timework"],
+  authors: [{ name: "Timework Team" }],
+  creator: "Timework",
+  metadataBase: new URL("https://timework.dev"), // Replace with actual domain in production or env var
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: "https://timework.dev",
+    siteName: "Timework",
+    title: "Timework | Protocol-Driven Project Management",
+    description: "Enterprise-standard project management for protocol-driven workflows.",
+    images: [
+      {
+        url: "/timework_dashboard_hero.png", // Assuming existing asset or will be created
+        width: 1200,
+        height: 630,
+        alt: "Timework Dashboard",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Timework | Protocol-Driven Project Management",
+    description: "Enterprise-standard project management for protocol-driven workflows.",
+    creator: "@timework",
+    images: ["/timework_dashboard_hero.png"],
+  },
+  icons: {
+    icon: "/icon.svg",
+    apple: "/icon.svg",
+    shortcut: "/icon.svg",
+  },
+};
+
+import { TooltipProvider } from "@radix-ui/react-tooltip";
+import { OnboardingCheckWrapper } from "@/components/auth/OnboardingCheckWrapper";
+import { Toaster } from "sonner";
+
+import { getCurrentUser } from "@/actions/auth";
+import { getDictionary, getLocale } from '@/i18n/server';
+import { Suspense } from "react";
+
+export default async function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  const dict = await getDictionary();
+  const locale = await getLocale();
+  const currentUser = await getCurrentUser();
+
+  return (
+    <html lang="en" suppressHydrationWarning>
+      <body className={`${GeistSans.variable} ${GeistMono.variable} antialiased`}>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <StackProvider app={stackServerApp}>
+            <StackTheme theme={{
+              light: {
+                primary: '#4f46e5',
+                foreground: '#0f172a', // slate-900
+                background: '#f8fafc', // slate-50
+                card: '#ffffff',
+                cardForeground: '#0f172a',
+                muted: '#f1f5f9',
+                mutedForeground: '#64748b',
+              },
+              dark: {
+                primary: '#4f46e5',
+                foreground: '#ffffff', // Pure White
+                background: '#0f172a',
+                card: '#0f172a',
+                cardForeground: '#ffffff', // Pure White
+                muted: '#1e293b',
+                mutedForeground: '#ffffff', // Pure White (Force visibility)
+                popover: '#0f172a',
+                popoverForeground: '#ffffff', // Pure White
+                secondary: '#1e293b',
+                secondaryForeground: '#ffffff', // Pure White
+                accent: '#1e293b',
+                accentForeground: '#ffffff', // Pure White
+                destructive: '#ef4444',
+                destructiveForeground: '#ffffff',
+                border: '#1e293b',
+                input: '#1e293b',
+                ring: '#4f46e5',
+              },
+              radius: '0.75rem',
+            }}>
+              <TooltipProvider>
+                <OnboardingCheckWrapper />
+                <Suspense fallback={null}>
+                  <Navbar dict={dict} locale={locale} signInUrl={stackServerApp.urls.signIn} currentUser={currentUser} />
+                </Suspense>
+                <main className="min-h-screen">
+                  {children}
+                </main>
+                <Toaster />
+              </TooltipProvider>
+            </StackTheme>
+          </StackProvider>
+        </ThemeProvider>
+      </body>
+    </html>
+  );
+}
