@@ -13,27 +13,27 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   title: {
-    default: "Timework | Protocol-Driven Project Management",
-    template: "%s | Timework",
+    default: "KBM Timework | Protocol-Driven Project Management",
+    template: "%s | KBM Timework",
   },
   description: "Timework is the enterprise-standard project management platform built for protocol-driven workflows. Streamline your operations with precision and clarity.",
   keywords: ["Project Management", "Protocol", "Enterprise", "SaaS", "Workflow", "Productivity", "Timework"],
   authors: [{ name: "Timework Team" }],
-  creator: "Timework",
-  metadataBase: new URL("https://timework.dev"), // Replace with actual domain in production or env var
+  creator: "KBM Timework",
+  metadataBase: new URL("http://timework.penerbitkbm.com"), // Replace with actual domain in production or env var
   openGraph: {
     type: "website",
-    locale: "en_US",
-    url: "https://timework.dev",
+    locale: "id_ID",
+    url: "http://timework.penerbitkbm.com",
     siteName: "Timework",
     title: "Timework | Protocol-Driven Project Management",
     description: "Enterprise-standard project management for protocol-driven workflows.",
     images: [
       {
-        url: "/timework_dashboard_hero.png", // Assuming existing asset or will be created
+        url: "/timework-og.png",
         width: 1200,
         height: 630,
-        alt: "Timework Dashboard",
+        alt: "KBM Timework Dashboard",
       },
     ],
   },
@@ -42,12 +42,21 @@ export const metadata: Metadata = {
     title: "Timework | Protocol-Driven Project Management",
     description: "Enterprise-standard project management for protocol-driven workflows.",
     creator: "@timework",
-    images: ["/timework_dashboard_hero.png"],
+    images: ["/timework-og.png"],
   },
   icons: {
     icon: "/icon.svg",
     apple: "/icon.svg",
     shortcut: "/icon.svg",
+  },
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "KBM Timework",
+  },
+  formatDetection: {
+    telephone: false,
   },
 };
 
@@ -58,6 +67,7 @@ import { Toaster } from "sonner";
 import { getCurrentUser } from "@/actions/auth";
 import { getDictionary, getLocale } from '@/i18n/server';
 import { Suspense } from "react";
+import { InstallPrompt } from "@/components/pwa/InstallPrompt";
 
 export default async function RootLayout({
   children,
@@ -69,7 +79,7 @@ export default async function RootLayout({
   const currentUser = await getCurrentUser();
 
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="id" suppressHydrationWarning>
       <body className={`${GeistSans.variable} ${GeistMono.variable} antialiased`}>
         <ThemeProvider
           attribute="class"
@@ -80,7 +90,7 @@ export default async function RootLayout({
           <StackProvider app={stackServerApp}>
             <StackTheme theme={{
               light: {
-                primary: '#4f46e5',
+                primary: '#cd1717', // KBM Red
                 foreground: '#0f172a', // slate-900
                 background: '#f8fafc', // slate-50
                 card: '#ffffff',
@@ -89,7 +99,7 @@ export default async function RootLayout({
                 mutedForeground: '#64748b',
               },
               dark: {
-                primary: '#4f46e5',
+                primary: '#cd1717', // KBM Red
                 foreground: '#ffffff', // Pure White
                 background: '#0f172a',
                 card: '#0f172a',
@@ -106,7 +116,7 @@ export default async function RootLayout({
                 destructiveForeground: '#ffffff',
                 border: '#1e293b',
                 input: '#1e293b',
-                ring: '#4f46e5',
+                ring: '#cd1717', // KBM Red
               },
               radius: '0.75rem',
             }}>
@@ -119,6 +129,7 @@ export default async function RootLayout({
                   {children}
                 </main>
                 <Toaster />
+                <InstallPrompt />
               </TooltipProvider>
             </StackTheme>
           </StackProvider>

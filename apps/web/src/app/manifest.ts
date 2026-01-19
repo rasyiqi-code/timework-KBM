@@ -2,13 +2,14 @@ import { MetadataRoute } from 'next';
 
 export default function manifest(): MetadataRoute.Manifest {
     return {
-        name: 'Timework',
+        name: 'KBM Timework',
         short_name: 'Timework',
-        description: 'Protocol-Driven Project Management',
+        description: 'Sistem Penerbitan Otomatis untuk KBM Timework',
         start_url: '/',
         display: 'standalone',
+        display_override: ['window-controls-overlay'],
         background_color: '#f8fafc',
-        theme_color: '#4f46e5',
+        theme_color: '#cd1717',
         icons: [
             {
                 src: '/icon.svg',

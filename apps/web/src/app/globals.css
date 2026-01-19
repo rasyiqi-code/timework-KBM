@@ -23,8 +23,8 @@
   --border: #e2e8f0;
   /* Slate-200 */
   --input: #e2e8f0;
-  --ring: #6366f1;
-  /* Indigo-500 */
+  --ring: #cd1717;
+  /* KBM Red */
 }
 
 /* Dark Mode Class */
@@ -49,8 +49,8 @@
   --border: #1e293b;
   /* Slate-800 */
   --input: #1e293b;
-  --ring: #6366f1;
-  /* Indigo-500 */
+  --ring: #cd1717;
+  /* KBM Red */
 }
 
 @theme inline {
@@ -69,6 +69,8 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-primary: #cd1717;
+  --color-secondary: #052e62;
 
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);

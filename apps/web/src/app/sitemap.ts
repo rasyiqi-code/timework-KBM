@@ -1,7 +1,7 @@
 import { MetadataRoute } from 'next';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-    const baseUrl = 'https://timework.dev'; // Replace with actual domain in production or env var
+    const baseUrl = 'http://timework.penerbitkbm.com'; // Replace with actual domain in production or env var
 
     return [
         {

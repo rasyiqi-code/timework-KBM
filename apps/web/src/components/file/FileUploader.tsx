@@ -13,9 +13,10 @@ interface FileUploaderProps {
     variant?: 'dropzone' | 'button' | 'compact';
     label?: string;
     className?: string;
+    children?: React.ReactNode;
 }
 
-export function FileUploader({ projectId, taskId, onUploadComplete, variant = 'dropzone', label, className }: FileUploaderProps) {
+export function FileUploader({ projectId, taskId, onUploadComplete, variant = 'dropzone', label, className, children }: FileUploaderProps) {
     const [isDragging, setIsDragging] = useState(false);
     const [uploadingFiles, setUploadingFiles] = useState<{ name: string; progress: number; status: 'uploading' | 'done' | 'error' }[]>([]);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -147,8 +148,12 @@ export function FileUploader({ projectId, taskId, onUploadComplete, variant = 'd
                         ${!className && variant === 'compact' ? 'px-2' : 'px-3'}
                     `}
                 >
-                    <UploadCloud className="w-3.5 h-3.5" />
-                    {label || (isCompact ? 'Upload' : 'Upload Files')}
+                    {children ? children : (
+                        <>
+                            <UploadCloud className="w-3.5 h-3.5" />
+                            {label || (isCompact ? 'Upload' : 'Upload Files')}
+                        </>
+                    )}
                 </button>
             )}
 

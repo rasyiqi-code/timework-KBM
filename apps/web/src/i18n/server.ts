@@ -3,9 +3,10 @@
 import { cookies } from 'next/headers';
 import { dictionaries, type Dictionary } from './dictionaries';
 
+
 export async function getDictionary(): Promise<Dictionary> {
     const cookieStore = await cookies();
-    const locale = cookieStore.get('locale')?.value;
+    const locale = cookieStore.get('NEXT_LOCALE')?.value;
 
     if (locale === 'en') {
         return dictionaries.en;
@@ -17,6 +18,6 @@ export async function getDictionary(): Promise<Dictionary> {
 
 export async function getLocale(): Promise<'id' | 'en'> {
     const cookieStore = await cookies();
-    const locale = cookieStore.get('locale')?.value;
+    const locale = cookieStore.get('NEXT_LOCALE')?.value;
     return locale === 'en' ? 'en' : 'id';
 }

@@ -44,6 +44,12 @@ export interface ProjectTableProps {
 export function ProjectTable({ projects: initialProjects, headers, dict, nextCursor: initialNextCursor, organizationId, currentUser, protocols }: ProjectTableProps) {
     const [projects, setProjects] = useState(initialProjects);
     const [nextCursor, setNextCursor] = useState(initialNextCursor);
+
+    // Sync state with props on router.refresh()
+    useEffect(() => {
+        setProjects(initialProjects);
+        setNextCursor(initialNextCursor);
+    }, [initialProjects, initialNextCursor]);
     const [isPending, startTransition] = useTransition();
     const [isLoadingMore, setIsLoadingMore] = useState(false);
 
@@ -200,11 +206,10 @@ export function ProjectTable({ projects: initialProjects, headers, dict, nextCur
                         </svg>
                     </div>
                     <input
-                        type="text"
-                        placeholder="Search projects..."
+                        placeholder={dict.project.searchPlaceholder}
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="block w-full pl-8 pr-3 py-1.5 border border-slate-200 rounded-md leading-5 bg-slate-50 text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white dark:focus:bg-slate-800 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-xs sm:text-sm transition-colors dark:bg-slate-800 dark:border-slate-700 dark:text-slate-100"
+                        className="block w-full pl-8 pr-3 py-1.5 border border-slate-200 rounded-md leading-5 bg-slate-50 text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white dark:focus:bg-slate-800 focus:ring-1 focus:ring-[#cd1717] focus:border-[#cd1717] text-xs sm:text-sm transition-colors dark:bg-slate-800 dark:border-slate-700 dark:text-slate-100"
                     />
                 </div>
 
@@ -214,9 +219,9 @@ export function ProjectTable({ projects: initialProjects, headers, dict, nextCur
                         <select
                             value={protocolFilter}
                             onChange={(e) => setProtocolFilter(e.target.value)}
-                            className="block w-full sm:w-auto pl-3 pr-8 py-1.5 text-xs sm:text-sm text-slate-900 border-slate-200 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 rounded-md bg-slate-50 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-100 dark:focus:bg-slate-800 max-w-[180px] truncate"
+                            className="block w-full sm:w-auto pl-3 pr-8 py-1.5 text-xs sm:text-sm text-slate-900 border-slate-200 focus:outline-none focus:ring-[#cd1717] focus:border-[#cd1717] rounded-md bg-slate-50 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-100 dark:focus:bg-slate-800 max-w-[180px] truncate"
                         >
-                            <option value="ALL">All Protocols</option>
+                            <option value="ALL">{dict.project.allProtocols}</option>
                             {protocols?.map(p => (
                                 <option key={p.id} value={p.id}>{p.name}</option>
                             ))}
@@ -229,9 +234,9 @@ export function ProjectTable({ projects: initialProjects, headers, dict, nextCur
                             value={statusFilter}
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             onChange={(e) => setStatusFilter(e.target.value as any)}
-                            className="block w-full sm:w-auto pl-3 pr-8 py-1.5 text-xs sm:text-sm text-slate-900 border-slate-200 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 rounded-md bg-slate-50 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-100 dark:focus:bg-slate-800"
+                            className="block w-full sm:w-auto pl-3 pr-8 py-1.5 text-xs sm:text-sm text-slate-900 border-slate-200 focus:outline-none focus:ring-[#cd1717] focus:border-[#cd1717] rounded-md bg-slate-50 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-100 dark:focus:bg-slate-800"
                         >
-                            <option value="ALL">All Status</option>
+                            <option value="ALL">{dict.project.allStatus}</option>
                             <option value="ACTIVE">{dict.project.status.ACTIVE}</option>
                             <option value="COMPLETED">{dict.project.status.COMPLETED}</option>
                         </select>
@@ -251,11 +256,11 @@ export function ProjectTable({ projects: initialProjects, headers, dict, nextCur
                                 {/* Resizer Handle */}
                                 <div
                                     onMouseDown={startResizing}
-                                    className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-indigo-500 active:bg-indigo-600 transition-colors z-30"
+                                    className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-[#cd1717] active:bg-[#a50f0f] transition-colors z-30"
                                 ></div>
                             </th>
                             <th className="px-4 py-2 text-xs font-bold uppercase tracking-wider text-slate-500 whitespace-nowrap border-l border-slate-100 dark:border-slate-800 dark:text-slate-400">
-                                Progress
+                                {dict.project.detail.progress}
                             </th>
                             {headers.map(header => (
                                 <th key={header.id} className="px-4 py-2 text-xs font-bold uppercase tracking-wider text-slate-500 whitespace-nowrap border-l border-slate-100 dark:border-slate-800 dark:text-slate-400">
@@ -293,7 +298,7 @@ export function ProjectTable({ projects: initialProjects, headers, dict, nextCur
                                         >
                                             <Link href={`/projects/${project.id}`} className="group block" title={project.title}>
                                                 <div className="flex items-center gap-2 w-full">
-                                                    <span className="font-bold text-sm text-slate-800 group-hover:text-indigo-600 transition-colors dark:text-slate-200 dark:group-hover:text-indigo-400 truncate">
+                                                    <span className="font-bold text-sm text-slate-800 group-hover:text-[#cd1717] transition-colors dark:text-slate-200 dark:group-hover:text-[#cd1717] truncate">
                                                         {project.title}
                                                     </span>
                                                     <span className={`text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded border shrink-0 ${effectiveStatus === 'ACTIVE' ? 'bg-emerald-50 text-emerald-600 border-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800' :
@@ -319,7 +324,7 @@ export function ProjectTable({ projects: initialProjects, headers, dict, nextCur
                                                 </div>
                                                 <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden dark:bg-slate-800">
                                                     <div
-                                                        className={`h-full rounded-full transition-all duration-500 ${percent === 100 ? 'bg-emerald-500' : 'bg-indigo-500'
+                                                        className={`h-full rounded-full transition-all duration-500 ${percent === 100 ? 'bg-emerald-500' : 'bg-[#cd1717]'
                                                             }`}
                                                         style={{ width: `${percent}%` }}
                                                     ></div>
@@ -357,7 +362,7 @@ export function ProjectTable({ projects: initialProjects, headers, dict, nextCur
                                                     ) : (
                                                         <div className="flex items-center gap-1.5 opacity-50">
                                                             <span className={`w-1.5 h-1.5 rounded-full ${item.status === 'IN_PROGRESS' ? 'bg-amber-400' :
-                                                                item.status === 'OPEN' ? 'bg-indigo-400' : 'bg-slate-300'
+                                                                item.status === 'OPEN' ? 'bg-[#cd1717]' : 'bg-slate-300'
                                                                 }`}></span>
                                                             <span className="text-[10px] text-slate-400 uppercase font-medium dark:text-slate-600">
                                                                 {dict.project.status[item.status as keyof typeof dict.project.status].replace('_', ' ')}

@@ -119,10 +119,10 @@ export function CreateProjectModal({ protocols, dict }: { protocols: Protocol[],
                                             setFormValues({}); // Reset form values on protocol switch
                                         }}
                                     />
-                                    <div className="p-3 rounded-lg border border-slate-200 bg-white hover:border-indigo-400 hover:shadow-sm transition-all peer-checked:border-indigo-600 peer-checked:bg-indigo-50 peer-checked:text-indigo-900 dark:bg-slate-950 dark:border-slate-800 dark:hover:border-indigo-500 dark:peer-checked:bg-indigo-900/20 dark:peer-checked:text-indigo-100">
+                                    <div className="p-3 rounded-lg border border-slate-200 bg-white hover:border-[#cd1717] hover:shadow-sm transition-all peer-checked:border-[#cd1717] peer-checked:bg-red-50 peer-checked:text-[#cd1717] dark:bg-slate-950 dark:border-slate-800 dark:hover:border-[#cd1717] dark:peer-checked:bg-red-900/20 dark:peer-checked:text-red-100">
                                         <div className="text-sm font-bold mb-0.5">{protocol.name}</div>
                                         <div className="text-xs text-slate-500 dark:text-slate-400 line-clamp-1">{protocol.description}</div>
-                                        <div className="absolute top-3 right-3 opacity-0 peer-checked:opacity-100 text-indigo-600 dark:text-indigo-400">
+                                        <div className="absolute top-3 right-3 opacity-0 peer-checked:opacity-100 text-[#cd1717] dark:text-red-400">
                                             ✔
                                         </div>
                                     </div>
@@ -143,7 +143,7 @@ export function CreateProjectModal({ protocols, dict }: { protocols: Protocol[],
                                 required
                                 value={formValues.title as string || ''}
                                 onChange={(e) => handleChange('title', e.target.value)}
-                                className="w-full rounded-lg border border-slate-300 bg-white text-sm text-slate-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all py-2 px-3 dark:bg-slate-950 dark:border-slate-700 dark:text-slate-100 dark:placeholder-slate-500"
+                                className="w-full rounded-lg border border-slate-300 bg-white text-sm text-slate-900 focus:border-[#cd1717] focus:ring-1 focus:ring-[#cd1717] outline-none transition-all py-2 px-3 dark:bg-slate-950 dark:border-slate-700 dark:text-slate-100 dark:placeholder-slate-500"
                                 placeholder="e.g. My New Book Project"
                             />
                         </div>
@@ -185,7 +185,7 @@ export function CreateProjectModal({ protocols, dict }: { protocols: Protocol[],
                                                         required={field.required}
                                                         value={formValues[field.key] || ''}
                                                         onChange={(e) => handleChange(field.key, e.target.value)}
-                                                        className="w-full rounded-lg border border-slate-300 bg-white text-sm text-slate-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all py-2 px-3 cursor-pointer dark:bg-slate-950 dark:border-slate-700 dark:text-slate-100"
+                                                        className="w-full rounded-lg border border-slate-300 bg-white text-sm text-slate-900 focus:border-[#cd1717] focus:ring-1 focus:ring-[#cd1717] outline-none transition-all py-2 px-3 cursor-pointer dark:bg-slate-950 dark:border-slate-700 dark:text-slate-100"
                                                     >
                                                         <option value="" disabled>{dict.common.select} {field.label}</option>
                                                         {field.options?.map(opt => (
@@ -199,7 +199,7 @@ export function CreateProjectModal({ protocols, dict }: { protocols: Protocol[],
                                                                 name={`${field.key}_custom`}
                                                                 required={field.required}
                                                                 placeholder={`Enter custom ${field.label.toLowerCase()}...`}
-                                                                className="w-full rounded-lg border border-slate-300 bg-slate-50 text-sm text-slate-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all py-2 px-3 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-100"
+                                                                className="w-full rounded-lg border border-slate-300 bg-slate-50 text-sm text-slate-900 focus:border-[#cd1717] focus:ring-1 focus:ring-[#cd1717] outline-none transition-all py-2 px-3 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-100"
                                                             />
                                                         </div>
                                                     )}
@@ -220,7 +220,7 @@ export function CreateProjectModal({ protocols, dict }: { protocols: Protocol[],
                                                                         : current.filter(v => v !== opt);
                                                                     handleChange(field.key, newVal);
                                                                 }}
-                                                                className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                                                                className="rounded border-slate-300 text-[#cd1717] focus:ring-[#cd1717]"
                                                             />
                                                             {opt}
                                                         </label>
@@ -234,7 +234,7 @@ export function CreateProjectModal({ protocols, dict }: { protocols: Protocol[],
                                                     placeholder={field.placeholder}
                                                     value={formValues[field.key] || ''}
                                                     onChange={(e) => handleChange(field.key, e.target.value)}
-                                                    className="w-full rounded-lg border border-slate-300 bg-white text-sm text-slate-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all py-2 px-3 dark:bg-slate-950 dark:border-slate-700 dark:text-slate-100 dark:placeholder-slate-500"
+                                                    className="w-full rounded-lg border border-slate-300 bg-white text-sm text-slate-900 focus:border-[#cd1717] focus:ring-1 focus:ring-[#cd1717] outline-none transition-all py-2 px-3 dark:bg-slate-950 dark:border-slate-700 dark:text-slate-100 dark:placeholder-slate-500"
                                                 />
                                             )}
                                         </div>
@@ -254,7 +254,7 @@ export function CreateProjectModal({ protocols, dict }: { protocols: Protocol[],
                         </button>
                         <button
                             type="submit"
-                            className="flex-1 px-4 py-2.5 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 shadow-md hover:shadow-lg transition-all"
+                            className="flex-1 px-4 py-2.5 bg-[#cd1717] text-white font-bold rounded-lg hover:bg-[#a50f0f] shadow-md hover:shadow-lg transition-all"
                         >
                             {dict.project.create}
                         </button>

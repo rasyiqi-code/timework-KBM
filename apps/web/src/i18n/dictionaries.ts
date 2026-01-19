@@ -14,18 +14,18 @@ export const dictionaries = {
             select: 'Pilih',
         },
         nav: {
-            brand: 'Timework',
-            features: 'Fitur',
-            howItWorks: 'Cara Kerja',
-            faq: 'FAQ',
-            projects: 'Proyek',
+            brand: 'KBM Timework',
+            features: 'Fasilitas',
+            howItWorks: 'Alur Naskah',
+            faq: 'Info',
+            projects: 'Daftar Alur Naskah',
             myTasks: 'Tugas Saya',
-            protocols: 'Protokol',
+            protocols: 'SOP Penerbitan',
             superAdmin: 'Super Admin',
             signIn: 'Masuk',
             signOut: 'Keluar',
-            getStarted: 'Mulai Sekarang',
-            projectForm: 'Formulir Proyek',
+            getStarted: 'Lihat Alur Naskah',
+            projectForm: 'Formulir Alur Naskah',
         },
         protocol: {
             titlePlaceholder: 'Ketik judul tugas baru...',
@@ -45,16 +45,16 @@ export const dictionaries = {
             }
         },
         project: {
-            title: 'Proyek Aktif',
-            subtitle: 'Pantau progres dan kelola alur kerja tim Anda.',
-            newProject: 'Proyek Baru',
-            createTitle: 'Buat Proyek Baru',
-            nameLabel: 'Nama Proyek',
-            protocolLabel: 'Pilih Protokol (Template)',
+            title: 'Alur Naskah Aktif',
+            subtitle: 'Pantau progres penerbitan buku dan kelola tim redaksi.',
+            newProject: 'Alur Naskah Baru',
+            createTitle: 'Input Alur Naskah Baru',
+            nameLabel: 'Judul Buku',
+            protocolLabel: 'Jenis Terbitan (SOP)',
             cancel: 'Batal',
             create: 'Buat Proyek',
-            noProjects: 'Belum ada proyek',
-            noProjectsDesc: 'Mulai dengan membuat proyek pertama Anda dari template protokol.',
+            noProjects: 'Belum ada Alur Naskah',
+            noProjectsDesc: 'Mulai dengan input Alur Naskah pertama Anda sesuai SOP.',
             updated: 'Diperbarui',
             tasks: 'Tugas',
             fastTrack: 'Mode Cepat (Satuan)',
@@ -93,7 +93,10 @@ export const dictionaries = {
                 clickToExpand: 'Klik untuk melihat detail',
                 clickToCollapse: 'Klik untuk menutup',
                 descriptionPlaceholder: 'Deskripsi...',
-            }
+            },
+            searchPlaceholder: 'Cari Alur Naskah...',
+            allProtocols: 'Semua SOP',
+            allStatus: 'Semua Status'
         },
         formBuilder: {
             title: 'Pengaturan Formulir Proyek',
@@ -148,42 +151,54 @@ export const dictionaries = {
         },
         home: {
             badge: 'v1.0 sekarang live',
-            title: 'Sistem Kerja Otomatis.',
-            titleHighlight: 'Tanpa Drama Koordinasi.',
-            subtitle: 'Timework menghubungkan tugas dalam rangkaian cerdas. Saat satu tugas selesai, tugas berikutnya terbuka otomatis. Bye-bye meeting status update.',
-            openProjects: 'Mulai Sekarang',
-            viewProtocols: 'Lihat Contoh',
+            title: 'Sistem Penerbitan Otomatis.',
+            titleHighlight: 'Fokus Alur Naskah, Bukan Drama.',
+            subtitle: 'KBM Timework mengawal setiap naskah dari masuk, editing, layout, hingga cetak. Saat editor selesai, layouter langsung dapat notifikasi.',
+            openProjects: 'Lihat Dashboard',
+            viewProtocols: 'Cek SOP',
             features: {
-                title: 'Sistem Kerja Cerdas',
-                subtitle: 'Semua yang Anda butuhkan untuk menyelesaikan proyek lebih cepat.',
+                title: 'Dapur Redaksi Modern',
+                subtitle: 'Semua alat yang dibutuhkan tim KBM untuk menerbitkan buku berkualitas lebih cepat.',
                 standardized: {
-                    title: 'Protokol Anti Lupa',
-                    desc: 'Ubah SOP rumit menjadi template checklist yang mustahil dilewatkan.'
+                    title: 'SOP Anti Lupa',
+                    desc: 'Setiap tahap penerbitan (editing, proofing, layout) sudah ada checklist-nya.'
                 },
                 dependencies: {
-                    title: 'Kunci & Buka Otomatis',
-                    desc: 'Jangan kerjakan langkah B sebelum A selesai. Sistem yang menjaga urutan kerja Anda.'
+                    title: 'Alur Terjaga',
+                    desc: 'Layout tidak bisa mulai sebelum naskah selesai diedit. Mencegah kerja dua kali.'
                 },
                 parallel: {
-                    title: 'Kerja Paralel',
-                    desc: 'Semua orang tahu apa yang harus dikerjakan sekarang, tanpa perlu ditanya.'
+                    title: 'Transparansi Tim',
+                    desc: 'Editor, Layouter, dan Desainer tahu persis status naskah tanpa perlu rapat terus-menerus.'
+                },
+                automated: {
+                    title: 'Otomatisasi Status',
+                    desc: 'Status naskah berubah otomatis saat checklist terpenuhi.'
+                },
+                sync: {
+                    title: 'Sinkronisasi Data',
+                    desc: 'Perubahan judul atau penulis langsung terupdate di semua divisi.'
+                },
+                audit: {
+                    title: 'Jejak Digital',
+                    desc: 'Riwayat revisi dan aktivitas tercatat lengkap. Aman dari saling lempar tanggung jawab.'
                 }
             },
             howItWorks: {
-                title: 'Cara Kerja',
-                subtitle: 'Sederhana, namun powerful.',
+                title: 'Alur Naskah',
+                subtitle: 'Sederhana, Terstandar, Cepat.',
                 steps: {
                     define: {
-                        title: '1. Definisikan',
-                        desc: 'Buat template protokol sekali saja. Tentukan langkah dan ketergantungan.'
+                        title: '1. Input Alur Naskah',
+                        desc: 'Admin menerima naskah dan memilih jenis terbitan (Mayor/Indie/Satuan).'
                     },
                     execute: {
-                        title: '2. Eksekusi',
-                        desc: 'Mulai proyek dari template. Tim langsung mendapatkan tugas mereka.'
+                        title: '2. Proses Redaksi',
+                        desc: 'Tim editor, layouter, dan desainer mengerjakan bagiannya sesuai urutan SOP.'
                     },
                     automate: {
-                        title: '3. Otomatisasi',
-                        desc: 'Sistem membuka tugas selanjutnya secara otomatis saat prasyarat terpenuhi.'
+                        title: '3. Siap Cetak',
+                        desc: 'Setelah semua checklist hijau, naskah siap naik cetak tanpa revisi berulang.'
                     }
                 }
             },
@@ -191,27 +206,28 @@ export const dictionaries = {
                 title: 'Pertanyaan Umum',
                 items: {
                     free: {
-                        q: 'Apakah ini gratis?',
-                        a: 'Ya, Timework gratis untuk penggunaan individu dan tim kecil. Kami ingin membantu Anda bekerja lebih efisien.'
+                        q: 'Siapa yang bisa akses?',
+                        a: 'Sistem ini khusus untuk karyawan internal dan mitra Penerbit KBM.'
                     },
                     team: {
-                        q: 'Bisakah saya mengundang tim?',
-                        a: 'Tentu saja. Anda dapat mengundang anggota tim tanpa batas ke dalam proyek Anda.'
+                        q: 'Bagaimana jika ada revisi?',
+                        a: 'Cukup reject status pada tahap tersebut, naskah akan kembali ke tahap sebelumnya.'
                     },
                     limit: {
-                        q: 'Apakah ada batasan proyek?',
-                        a: 'Saat ini tidak ada batasan jumlah proyek yang dapat Anda buat.'
+                        q: 'Bisa untuk buku satuan?',
+                        a: 'Bisa. Gunakan SOP "Cetak Satuan" untuk alur yang lebih ringkas.'
                     }
                 }
             },
             footer: {
-                brand: 'Timework',
-                desc: 'Standar baru untuk operasional tim.',
-                copyright: '© 2024 Timework. All rights reserved.',
+                brand: 'Penerbit KBM',
+                desc: 'Menerbitkan mimpi, mencerdaskan bangsa.',
+                copyright: '© 2024 Penerbit KBM. Internal System.',
                 links: {
-                    twitter: 'Twitter',
-                    github: 'GitHub'
-                }
+                    twitter: 'Instagram',
+                    github: 'Website'
+                },
+                developedBy: 'Dikembangkan oleh {name} dari {company}'
             }
         },
     },
@@ -227,7 +243,7 @@ export const dictionaries = {
             select: 'Select',
         },
         nav: {
-            brand: 'Timework',
+            brand: 'KBM Timework',
             features: 'Features',
             howItWorks: 'How it Works',
             faq: 'FAQ',
@@ -320,7 +336,10 @@ export const dictionaries = {
                 clickToExpand: 'Click to expand details',
                 clickToCollapse: 'Click to collapse',
                 descriptionPlaceholder: 'Description...',
-            }
+            },
+            searchPlaceholder: 'Search projects...',
+            allProtocols: 'All Protocols',
+            allStatus: 'All Status'
         },
         formBuilder: {
             title: 'Project Form Settings',
@@ -363,7 +382,7 @@ export const dictionaries = {
             badge: 'v1.0 is now live',
             title: 'Automated Operations.',
             titleHighlight: 'Zero Coordination.',
-            subtitle: 'Timework turns your SOPs into executable protocols. When one step finishes, the next unlocks automatically. No more checking in.',
+            subtitle: 'KBM Timework turns your SOPs into executable protocols. When one step finishes, the next unlocks automatically. No more checking in.',
             openProjects: 'Start Shipping',
             viewProtocols: 'See Examples',
             features: {
@@ -380,6 +399,18 @@ export const dictionaries = {
                 parallel: {
                     title: 'Visual Progress',
                     desc: 'See exactly where every project is stuck. Eliminate bottlenecks instantly.'
+                },
+                automated: {
+                    title: 'Automated Execution',
+                    desc: 'Protocols run themselves. Just set the rules and watch it go.'
+                },
+                sync: {
+                    title: 'Real-time Sync',
+                    desc: 'Changes propagate instantly across your team.'
+                },
+                audit: {
+                    title: 'Audit Trails',
+                    desc: 'Track every action and revert changes with a click.'
                 }
             },
             howItWorks: {
@@ -405,7 +436,7 @@ export const dictionaries = {
                 items: {
                     free: {
                         q: 'Is it free?',
-                        a: 'Yes, Timework is free for individuals and small teams. We want to help you work efficiently.'
+                        a: 'Yes, KBM Timework is free for individuals and small teams. We want to help you work efficiently.'
                     },
                     team: {
                         q: 'Can I invite my team?',
@@ -418,13 +449,14 @@ export const dictionaries = {
                 }
             },
             footer: {
-                brand: 'Timework',
+                brand: 'KBM Timework',
                 desc: 'The new standard for team operations.',
-                copyright: '© 2024 Timework. All rights reserved.',
+                copyright: '© 2024 KBM Timework. All rights reserved.',
                 links: {
                     twitter: 'Twitter',
                     github: 'GitHub'
-                }
+                },
+                developedBy: 'Developed by {name} from {company}'
             }
         }
     }

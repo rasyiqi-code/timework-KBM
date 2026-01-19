@@ -5,9 +5,9 @@ import { getCurrentUser } from "@/actions/auth";
 
 export default async function Home() {
   const cookieStore = await cookies();
-  const locale = cookieStore.get('NEXT_LOCALE')?.value || 'en';
-  const dict = dictionaries[locale as keyof typeof dictionaries] || dictionaries.en;
+  const locale = cookieStore.get('NEXT_LOCALE')?.value || 'id';
+  const dict = dictionaries[locale as keyof typeof dictionaries] || dictionaries.id;
   const currentUser = await getCurrentUser();
 
-  return <LandingContent dict={dict} currentUser={currentUser} />;
+  return <LandingContent dict={dict} currentUser={currentUser} locale={locale as 'id' | 'en'} />;
 }

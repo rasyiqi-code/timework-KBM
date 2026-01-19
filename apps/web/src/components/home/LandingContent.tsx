@@ -1,15 +1,18 @@
 'use client';
 
 import { motion, AnimatePresence, type Variants } from 'framer-motion';
-import { ArrowRight, Layout, Lock, Zap, CheckCircle2, Menu, X, ChevronDown } from 'lucide-react';
+import { ArrowRight, Layout, Lock, CheckSquare, CheckCircle2, Menu, X, ChevronDown } from 'lucide-react';
 import Link from "next/link";
 import React, { useState } from 'react';
 import { Dictionary } from '@/i18n/dictionaries';
 import { HeroDashboardDemo } from './HeroDashboardDemo';
 
+import { LanguageToggle } from '../language/LanguageToggle';
+
 interface LandingContentProps {
     dict: Dictionary;
     currentUser?: unknown;
+    locale: 'id' | 'en';
 }
 
 // Animation Variants
@@ -36,7 +39,7 @@ const itemVariants: Variants = {
     }
 };
 
-export function LandingContent({ dict, currentUser }: LandingContentProps) {
+export function LandingContent({ dict, currentUser, locale }: LandingContentProps) {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
 
@@ -65,8 +68,8 @@ export function LandingContent({ dict, currentUser }: LandingContentProps) {
             <nav className="fixed top-0 left-0 right-0 z-50 border-b border-slate-200/80 bg-white/90 backdrop-blur-md support-[backdrop-filter]:bg-white/60">
                 <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
                     <div className="flex items-center gap-2 font-bold text-xl tracking-tight">
-                        <div className="w-8 h-8 rounded bg-blue-600 flex items-center justify-center text-white">
-                            <Zap size={18} fill="currentColor" />
+                        <div className="w-8 h-8 rounded bg-[#cd1717] flex items-center justify-center text-white">
+                            <CheckSquare size={18} strokeWidth={3} />
                         </div>
                         <span className="text-slate-900">{dict.nav.brand}</span>
                     </div>
@@ -79,12 +82,13 @@ export function LandingContent({ dict, currentUser }: LandingContentProps) {
                     </div>
 
                     <div className="hidden md:flex items-center gap-4">
+                        <LanguageToggle currentLocale={locale} />
                         {!currentUser ? (
                             <Link href="/handler/sign-in" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
                                 {dict.nav.signIn}
                             </Link>
                         ) : null}
-                        <Link href="/projects" className="px-4 py-2 text-sm font-bold bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all shadow-md shadow-blue-900/10">
+                        <Link href="/projects" className="px-4 py-2 text-sm font-bold bg-[#cd1717] text-white rounded-lg hover:bg-[#a50f0f] transition-all shadow-md shadow-red-900/10">
                             {currentUser ? "Go to Dashboard" : dict.nav.getStarted}
                         </Link>
                     </div>
@@ -108,7 +112,11 @@ export function LandingContent({ dict, currentUser }: LandingContentProps) {
                                 <button onClick={() => scrollToSection('features')}>{dict.nav.features}</button>
                                 <button onClick={() => scrollToSection('how-it-works')}>{dict.nav.howItWorks}</button>
                                 <button onClick={() => scrollToSection('faq')}>{dict.nav.faq}</button>
-                                <div className="h-px bg-border/50 my-2" />
+                                <div className="h-px bg-slate-200 my-2" />
+                                <div className="flex items-center gap-2 px-2">
+                                    <span className="text-muted-foreground">Language:</span>
+                                    <LanguageToggle currentLocale={locale} />
+                                </div>
                                 {!currentUser && (
                                     <Link href="/handler/sign-in">{dict.nav.signIn}</Link>
                                 )}
@@ -130,17 +138,17 @@ export function LandingContent({ dict, currentUser }: LandingContentProps) {
                         transition={{ duration: 0.8, ease: "easeOut" }}
                         className="space-y-8 text-center lg:text-left z-10"
                     >
-                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 border border-blue-100 text-blue-600 text-xs font-bold uppercase tracking-wide mb-6">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 border border-blue-100 text-[#052e62] text-xs font-bold uppercase tracking-wide mb-6">
                             <span className="relative flex h-2 w-2">
-                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                                <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#052e62] opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#052e62]"></span>
                             </span>
                             {dict.home.badge}
                         </div>
 
                         <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight text-slate-900 leading-[1.1] mb-6">
                             {dict.home.title} <br />
-                            <span className="text-blue-600">
+                            <span className="text-[#cd1717]">
                                 {dict.home.titleHighlight}
                             </span>
                         </h1>
@@ -152,7 +160,7 @@ export function LandingContent({ dict, currentUser }: LandingContentProps) {
                         <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                             <Link
                                 href="/projects"
-                                className="group inline-flex items-center justify-center gap-2 px-6 py-3.5 text-base font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-all shadow-lg shadow-blue-900/10 hover:-translate-y-0.5"
+                                className="group inline-flex items-center justify-center gap-2 px-6 py-3.5 text-base font-bold text-white bg-[#cd1717] rounded-lg hover:bg-[#a50f0f] transition-all shadow-lg shadow-red-900/10 hover:-translate-y-0.5"
                             >
                                 {dict.home.openProjects}
                                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -234,34 +242,34 @@ export function LandingContent({ dict, currentUser }: LandingContentProps) {
                     >
                         {/* Uniform Cards */}
                         <FeatureCard
-                            icon={<Layout className="w-6 h-6 text-blue-600" />}
+                            icon={<Layout className="w-6 h-6 text-[#052e62]" />}
                             title={dict.home.features.standardized.title}
                             desc={dict.home.features.standardized.desc}
                         />
                         <FeatureCard
-                            icon={<Lock className="w-6 h-6 text-blue-600" />}
+                            icon={<Lock className="w-6 h-6 text-[#052e62]" />}
                             title={dict.home.features.dependencies.title}
                             desc={dict.home.features.dependencies.desc}
                         />
                         <FeatureCard
-                            icon={<Zap className="w-6 h-6 text-blue-600" />}
+                            icon={<CheckSquare className="w-6 h-6 text-[#052e62]" />}
                             title={dict.home.features.parallel.title}
                             desc={dict.home.features.parallel.desc}
                         />
                         <FeatureCard
-                            icon={<CheckCircle2 className="w-6 h-6 text-blue-600" />}
-                            title="Automated Execution"
-                            desc="Protocols run themselves. Just set the rules and watch it go."
+                            icon={<CheckCircle2 className="w-6 h-6 text-[#052e62]" />}
+                            title={dict.home.features.automated.title}
+                            desc={dict.home.features.automated.desc}
                         />
                         <FeatureCard
-                            icon={<ArrowRight className="w-6 h-6 text-blue-600" />}
-                            title="Real-time Sync"
-                            desc="Changes propagate instantly across your team."
+                            icon={<ArrowRight className="w-6 h-6 text-[#052e62]" />}
+                            title={dict.home.features.sync.title}
+                            desc={dict.home.features.sync.desc}
                         />
                         <FeatureCard
-                            icon={<Menu className="w-6 h-6 text-blue-600" />}
-                            title="Audit Trails"
-                            desc="Track every action and revert changes with a click."
+                            icon={<Menu className="w-6 h-6 text-[#052e62]" />}
+                            title={dict.home.features.audit.title}
+                            desc={dict.home.features.audit.desc}
                         />
                     </motion.div>
                 </div>
@@ -357,7 +365,7 @@ export function LandingContent({ dict, currentUser }: LandingContentProps) {
 
             {/* Bottom CTA Banner - Clean */}
             <section className="py-24 max-w-7xl mx-auto px-4">
-                <div className="relative rounded-3xl overflow-hidden bg-blue-600 text-white shadow-xl shadow-blue-900/20">
+                <div className="relative rounded-3xl overflow-hidden bg-[#cd1717] text-white shadow-xl shadow-red-900/20">
                     <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,0.05)_50%,transparent_75%,transparent_100%)] bg-[length:250%_250%] animate-[gradient_8s_linear_infinite]" />
 
                     <div className="relative z-10 px-6 py-20 text-center">
@@ -378,13 +386,13 @@ export function LandingContent({ dict, currentUser }: LandingContentProps) {
                             <div className="flex flex-col sm:flex-row gap-4 justify-center">
                                 <Link
                                     href="/projects"
-                                    className="px-8 py-3.5 text-base font-bold bg-white text-blue-600 rounded-lg hover:bg-blue-50 transition-all shadow-lg hover:transform hover:-translate-y-1"
+                                    className="px-8 py-3.5 text-base font-bold bg-white text-[#cd1717] rounded-lg hover:bg-red-50 transition-all shadow-lg hover:transform hover:-translate-y-1"
                                 >
                                     Start for Free
                                 </Link>
                                 <Link
                                     href="/admin/protocols"
-                                    className="px-8 py-3.5 text-base font-bold bg-blue-700 text-white rounded-lg hover:bg-blue-800 transition-all border border-blue-500"
+                                    className="px-8 py-3.5 text-base font-bold bg-[#052e62] text-white rounded-lg hover:bg-[#04244d] transition-all border border-[#052e62]"
                                 >
                                     View Demo
                                 </Link>
@@ -400,8 +408,8 @@ export function LandingContent({ dict, currentUser }: LandingContentProps) {
                     <div className="flex flex-col md:flex-row justify-between items-center gap-6 mb-8">
                         <div>
                             <div className="flex items-center gap-2 font-bold text-lg mb-2 text-slate-900">
-                                <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white">
-                                    <Zap size={16} fill="currentColor" />
+                                <div className="w-8 h-8 rounded-lg bg-[#cd1717] flex items-center justify-center text-white">
+                                    <CheckSquare size={16} strokeWidth={3} />
                                 </div>
                                 {dict.home.footer.brand}
                             </div>
@@ -409,8 +417,8 @@ export function LandingContent({ dict, currentUser }: LandingContentProps) {
                         </div>
 
                         <div className="flex items-center gap-6 text-sm font-medium text-slate-500">
-                            <a href="#" className="hover:text-indigo-600 transition-colors">{dict.home.footer.links.github}</a>
-                            <a href="#" className="hover:text-indigo-600 transition-colors">{dict.home.footer.links.twitter}</a>
+                            <a href="#" className="hover:text-[#cd1717] transition-colors">{dict.home.footer.links.github}</a>
+                            <a href="#" className="hover:text-[#cd1717] transition-colors">{dict.home.footer.links.twitter}</a>
                         </div>
                     </div>
 
@@ -420,6 +428,22 @@ export function LandingContent({ dict, currentUser }: LandingContentProps) {
                             <a href="#" className="hover:text-slate-600 transition-colors">Privacy Policy</a>
                             <a href="#" className="hover:text-slate-600 transition-colors">Terms of Service</a>
                         </div>
+                    </div>
+
+                    <div className="border-t border-slate-100 pt-8 mt-8 text-center text-xs text-slate-400">
+                        <p>
+                            {(dict.home.footer.developedBy || "Developed by {name} from {company}")
+                                .replace('{name}', 'Rasyiqi')
+                                .split('{company}')[0]}
+                            <a
+                                href="https://crediblemark.com"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="font-semibold hover:text-[#cd1717] transition-colors"
+                            >
+                                Crediblemark.com
+                            </a>
+                        </p>
                     </div>
                 </div>
             </footer>
@@ -432,7 +456,7 @@ export function LandingContent({ dict, currentUser }: LandingContentProps) {
 function FeatureCard({ icon, title, desc }: { icon: React.ReactNode, title: string, desc: string }) {
     return (
         <motion.div variants={itemVariants} className="group p-8 rounded-xl bg-white border border-slate-200 hover:border-blue-300 transition-all duration-300 hover:shadow-lg shadow-sm">
-            <div className="mb-5 p-3 rounded-lg bg-blue-50 text-blue-600 w-fit group-hover:bg-blue-600 group-hover:text-white transition-colors duration-300">
+            <div className="mb-5 p-3 rounded-lg bg-blue-50 text-[#052e62] w-fit group-hover:bg-[#052e62] group-hover:text-white transition-colors duration-300">
                 {icon}
             </div>
             <h3 className="text-lg font-bold mb-3 text-slate-900">{title}</h3>
@@ -444,7 +468,7 @@ function FeatureCard({ icon, title, desc }: { icon: React.ReactNode, title: stri
 function HowToStep({ number, title, desc }: { number: string, title: string, desc: string }) {
     return (
         <motion.div variants={itemVariants} className="flex flex-col items-center text-center bg-white p-6 rounded-2xl z-10 border border-slate-100 shadow-sm">
-            <div className="w-16 h-16 rounded-xl bg-blue-50 flex items-center justify-center text-2xl font-bold text-blue-600 mb-6">
+            <div className="w-16 h-16 rounded-xl bg-blue-50 flex items-center justify-center text-2xl font-bold text-[#052e62] mb-6">
                 {number}
             </div>
             <h3 className="text-xl font-bold mb-3 text-slate-900">{title}</h3>

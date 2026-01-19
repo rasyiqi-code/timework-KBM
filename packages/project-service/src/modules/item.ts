@@ -116,7 +116,7 @@ export async function updateItemStatus(prisma: PrismaClient, ctx: ProjectContext
     const item = await prisma.projectItem.update({
         where: { id: itemId },
         data: { status: newStatus },
-        include: { project: true }
+        include: { project: true, files: { select: { id: true } } }
     });
 
     // Don't log recursive system updates to avoid noise? Or maybe valuable? 
@@ -139,10 +139,16 @@ export async function updateItemStatus(prisma: PrismaClient, ctx: ProjectContext
 
         // ... (Moving validation up in a separate step if strictness needed, but sticking to logic injection for now to minimize diff risk)
 
-        if (item.requireAttachment && !item.attachmentUrl) {
-            // Revert update
-            await prisma.projectItem.update({ where: { id: itemId }, data: { status: 'OPEN' } }); // Assuming prev was OPEN
-            throw new Error('File upload required to complete this task');
+        if (newStatus === 'DONE' && item.requireAttachment) {
+            // Check legacy attachmentUrl OR new files relation
+            const hasFiles = item.files && item.files.length > 0;
+            const hasAttachmentUrl = item.attachmentUrl && item.attachmentUrl.length > 0;
+
+            if (!hasFiles && !hasAttachmentUrl) {
+                // Revert update
+                await prisma.projectItem.update({ where: { id: itemId }, data: { status: 'OPEN' } }); // Assuming prev was OPEN
+                throw new Error('File upload required to complete this task');
+            }
         }
 
         const dependents = await prisma.itemDependency.findMany({

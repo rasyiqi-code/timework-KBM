@@ -9,7 +9,7 @@ import { type ProjectItem, type ItemDependency } from '@repo/database';
 import { type Dictionary } from '@/i18n/dictionaries';
 import { toast } from 'sonner';
 import { FileUploader } from '@/components/file/FileUploader';
-import { Paperclip } from 'lucide-react';
+import { Paperclip, Plus } from 'lucide-react';
 
 type ProjectItemWithRelations = ProjectItem & {
     dependsOn: (ItemDependency & { prerequisite: ProjectItem })[];
@@ -88,7 +88,7 @@ export function ProjectItemCard({ item, users, currentUser, dict, projectOwnerId
     // Attachment check
     const requireAttachment = item.requireAttachment;
     const attachmentUrl = item.attachmentUrl;
-    const isUploadMissing = requireAttachment && !attachmentUrl;
+    const isUploadMissing = requireAttachment && ((!attachmentUrl || attachmentUrl === '') && (!item.files || item.files.length === 0));
 
     // Visibility Logic: 
     // STRICT: Only show if Required OR has existing file OR is currently uploading.
@@ -177,10 +177,16 @@ export function ProjectItemCard({ item, users, currentUser, dict, projectOwnerId
                 <div className="absolute left-[47px] top-3 bottom-3 w-1 bg-slate-200 rounded-full hidden md:block dark:bg-slate-700"></div>
             )}
 
-            {/* Compact Card */}
+            {/* Compact Card - Click to Expand */}
             <div
+                onClick={() => {
+                    // Prevent expansion if selecting text or in edit mode
+                    const selection = window.getSelection();
+                    if (selection && selection.toString().length > 0) return;
+                    if (!isEditMode) setIsDetailsExpanded(!isDetailsExpanded);
+                }}
                 className={`
-                w-full px-4 py-3 rounded-lg border transition-all duration-200 relative
+                w-full px-4 py-3 rounded-lg border transition-all duration-200 relative cursor-pointer
                 ${item.status === 'LOCKED'
                         ? 'bg-slate-50 border-slate-200/60 grayscale opacity-70 dark:bg-slate-900/50 dark:border-slate-800'
                         : 'bg-white border-slate-200 shadow-sm hover:shadow-md hover:border-indigo-200 dark:bg-slate-900 dark:border-slate-800 dark:hover:border-indigo-500'
@@ -192,7 +198,10 @@ export function ProjectItemCard({ item, users, currentUser, dict, projectOwnerId
                 <div className="absolute top-1.5 right-1.5 flex items-center gap-1 z-10">
                     {item.status !== 'LOCKED' && showEditToggle && (
                         <button
-                            onClick={() => setIsEditMode(!isEditMode)}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setIsEditMode(!isEditMode);
+                            }}
                             className={`p-0.5 rounded-md hover:bg-slate-100 text-slate-300 hover:text-slate-600 transition-all dark:hover:bg-slate-800 ${isEditMode ? 'text-amber-500 bg-amber-50 dark:bg-amber-900/40' : ''}`}
                             title={isEditMode ? dict.project.detail.lockAssignments : dict.project.detail.unlockAssignments}
                         >
@@ -205,7 +214,7 @@ export function ProjectItemCard({ item, users, currentUser, dict, projectOwnerId
                     {/* LEFT: Status & Title */}
                     <div className="flex items-center gap-3 w-full md:flex-1 min-w-0">
                         {/* Status Pill */}
-                        <div className={`shrink-0 w-1.5 h-1.5 rounded-full ${item.status === 'OPEN' ? 'bg-indigo-500' :
+                        <div className={`shrink-0 w-1.5 h-1.5 rounded-full ${item.status === 'OPEN' ? 'bg-[#cd1717]' :
                             item.status === 'IN_PROGRESS' ? 'bg-amber-500' :
                                 item.status === 'DONE' ? 'bg-emerald-500' : 'bg-slate-300'
                             }`}></div>
@@ -215,12 +224,13 @@ export function ProjectItemCard({ item, users, currentUser, dict, projectOwnerId
                                 <input
                                     type="text"
                                     defaultValue={item.title}
+                                    onClick={(e) => e.stopPropagation()}
                                     onBlur={(e) => {
                                         if (e.target.value !== item.title) {
                                             import('@/actions/project').then(mod => mod.updateProjectItemDetails(item.id, { title: e.target.value }));
                                         }
                                     }}
-                                    className="text-sm font-semibold w-full bg-slate-50 border border-indigo-200 rounded px-2 py-0.5 text-slate-800 focus:ring-1 focus:ring-indigo-500 outline-none dark:bg-slate-800 dark:border-indigo-900 dark:text-slate-100"
+                                    className="text-sm font-semibold w-full bg-slate-50 border border-red-200 rounded px-2 py-0.5 text-slate-800 focus:ring-1 focus:ring-[#cd1717] outline-none dark:bg-slate-800 dark:border-red-900 dark:text-slate-100"
                                 />
                             ) : (
                                 <div className="flex items-baseline gap-2">
@@ -228,7 +238,7 @@ export function ProjectItemCard({ item, users, currentUser, dict, projectOwnerId
                                         {itemType === 'NOTE' ? (
                                             <StickyNote size={14} className="text-amber-500 shrink-0" />
                                         ) : (
-                                            <CheckSquare size={14} className="text-indigo-500 shrink-0" />
+                                            <CheckSquare size={14} className="text-[#cd1717] shrink-0" />
                                         )}
                                         {item.title}
                                     </h3>
@@ -238,12 +248,10 @@ export function ProjectItemCard({ item, users, currentUser, dict, projectOwnerId
 
                             {/* Description / Dependencies */}
                             <div
-                                onClick={() => !isEditMode && setIsDetailsExpanded(!isDetailsExpanded)}
                                 className={`
-                                    text-[11px] text-slate-500 transition-all cursor-pointer hover:bg-slate-50 rounded px-1 -ml-1 mt-0.5 dark:text-slate-400 dark:hover:bg-slate-800
+                                    text-[11px] text-slate-500 transition-all rounded px-1 -ml-1 mt-0.5 dark:text-slate-400
                                     ${isDetailsExpanded || isEditMode ? 'h-auto whitespace-normal' : 'h-5 flex items-center gap-2'}
                                 `}
-                                title={!isDetailsExpanded ? dict.project.detail.clickToExpand : dict.project.detail.clickToCollapse}
                             >
                                 {isEditMode ? (
                                     <textarea
@@ -256,7 +264,7 @@ export function ProjectItemCard({ item, users, currentUser, dict, projectOwnerId
                                         }}
                                         onClick={(e) => e.stopPropagation()}
                                         rows={1}
-                                        className="w-full bg-slate-50 border border-indigo-200 rounded px-1 py-1 cursor-text min-h-[1.5rem] resize-y leading-tight focus:ring-1 focus:ring-indigo-500 outline-none dark:bg-slate-800 dark:border-indigo-900 dark:text-slate-100"
+                                        className="w-full bg-slate-50 border border-red-200 rounded px-1 py-1 cursor-text min-h-[1.5rem] resize-y leading-tight focus:ring-1 focus:ring-[#cd1717] outline-none dark:bg-slate-800 dark:border-red-900 dark:text-slate-100"
                                     />
                                 ) : (
                                     <>
@@ -291,7 +299,7 @@ export function ProjectItemCard({ item, users, currentUser, dict, projectOwnerId
 
                             {/* Attachments Section - File Manager */}
                             {shouldShowAttachment && (isAdmin || isProjectOwner || isAssignedToMe) && (
-                                <div className={`mt-2 pt-2 border-t border-slate-100 dark:border-slate-800 ${!isDetailsExpanded ? 'hidden' : 'block'}`}>
+                                <div onClick={(e) => e.stopPropagation()} className={`mt-2 pt-2 border-t border-slate-100 dark:border-slate-800 ${!isDetailsExpanded ? 'hidden' : 'block'}`}>
                                     <div className="flex items-center justify-between mb-2">
                                         <div className="flex items-center gap-2">
                                             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Attachments</span>
@@ -305,14 +313,17 @@ export function ProjectItemCard({ item, users, currentUser, dict, projectOwnerId
                                                 taskId={item.id}
                                                 onUploadComplete={() => router.refresh()}
                                                 variant="compact"
-                                            />
+                                                className="w-9 h-9 px-0 justify-center bg-transparent text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200 transition-all rounded-full"
+                                            >
+                                                <Plus size={24} strokeWidth={2.5} />
+                                            </FileUploader>
                                         )}
                                     </div>
 
                                     {/* Mini File List */}
                                     <div className="space-y-1">
                                         {item.files?.map(file => (
-                                            <div key={file.id} className="group/file flex items-center justify-between p-2 rounded bg-slate-50 border border-slate-200 hover:border-indigo-300 transition-colors dark:bg-slate-900 dark:border-slate-800 dark:hover:border-indigo-700">
+                                            <div key={file.id} className="group/file flex items-center justify-between p-2 rounded bg-slate-50 border border-slate-200 hover:border-red-300 transition-colors dark:bg-slate-900 dark:border-slate-800 dark:hover:border-red-700">
                                                 <a href={file.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 min-w-0 flex-1 hover:underline">
                                                     <Paperclip className="w-3.5 h-3.5 text-slate-400" />
                                                     <span className="text-xs text-slate-600 dark:text-slate-300 truncate font-medium">{file.name}</span>
@@ -349,7 +360,7 @@ export function ProjectItemCard({ item, users, currentUser, dict, projectOwnerId
                     </div>
 
                     {/* RIGHT: Assignee & Actions */}
-                    <div className="flex items-center gap-2 shrink-0 w-full md:w-auto justify-end border-t md:border-t-0 pt-2 md:pt-0 border-slate-50 dark:border-slate-800">
+                    <div onClick={(e) => e.stopPropagation()} className="flex items-center gap-2 shrink-0 w-full md:w-auto justify-end border-t md:border-t-0 pt-2 md:pt-0 border-slate-50 dark:border-slate-800">
                         <div>
                             <AssigneeSelector
                                 itemId={item.id}
@@ -379,27 +390,32 @@ export function ProjectItemCard({ item, users, currentUser, dict, projectOwnerId
                                 }
 
                                 return (
-                                    <button
-                                        onClick={() => handleStatusChange(item.id, item.status === 'DONE' ? 'OPEN' : 'DONE')}
-                                        disabled={isPending}
-                                        className={`
-                                            h-7 px-3 rounded-md text-xs font-semibold transition-all border shadow-sm flex items-center gap-1.5 cursor-pointer
-                                            ${isPending ? 'opacity-70 cursor-wait' : ''}
-                                            ${item.status === 'DONE'
-                                                ? 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-800'
-                                                : 'bg-indigo-600 border-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-500'}
-                                        `}
-                                    >
-                                        {isPending ? (
-                                            '...'
-                                        ) : item.status === 'DONE' ? (
-                                            dict.project.detail.reopen
-                                        ) : isUnassigned ? (
-                                            dict.project.detail.take
-                                        ) : (
-                                            <><span>✓</span> {dict.project.detail.done}</>
-                                        )}
-                                    </button>
+                                    <div className="flex items-center gap-1">
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleStatusChange(item.id, item.status === 'DONE' ? 'OPEN' : 'DONE');
+                                            }}
+                                            disabled={isPending}
+                                            className={`
+                                                h-7 px-3 rounded-md text-xs font-semibold transition-all border shadow-sm flex items-center gap-1.5 cursor-pointer
+                                                ${isPending ? 'opacity-70 cursor-wait' : ''}
+                                                ${item.status === 'DONE'
+                                                    ? 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-800'
+                                                    : 'bg-[#cd1717] border-[#cd1717] text-white hover:bg-[#a50f0f] dark:bg-[#cd1717] dark:hover:bg-[#a50f0f]'}
+                                            `}
+                                        >
+                                            {isPending ? (
+                                                '...'
+                                            ) : item.status === 'DONE' ? (
+                                                dict.project.detail.reopen
+                                            ) : isUnassigned ? (
+                                                dict.project.detail.take
+                                            ) : (
+                                                <><span>✓</span> {dict.project.detail.done}</>
+                                            )}
+                                        </button>
+                                    </div>
                                 );
                             })()
                         )}
