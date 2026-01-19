@@ -58,7 +58,7 @@ const withPWA = withPWAInit({
 });
 
 const nextConfig: NextConfig = {
-  transpilePackages: ['@repo/database'],
+  transpilePackages: ['@repo/database', '@stackframe/stack'],
   images: {
     remotePatterns: [
       {
