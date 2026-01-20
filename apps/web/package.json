@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "tsx server.ts",
-    "build": "next build --webpack",
+    "build": "../../node_modules/.bin/prisma generate --schema=../../packages/database/schema.prisma && next build",
     "start": "NODE_ENV=production tsx server.ts",
     "lint": "eslint"
   },
