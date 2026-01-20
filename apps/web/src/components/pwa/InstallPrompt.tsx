@@ -73,12 +73,12 @@ export function InstallPrompt() {
         <AnimatePresence>
             {showPrompt && (
                 <motion.div
-                    initial={{ opacity: 0, y: 100 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 100 }}
-                    className="fixed bottom-0 left-0 right-0 z-50 p-4 md:bottom-4 md:right-4 md:left-auto md:w-96"
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
                 >
-                    <div className="bg-white rounded-xl shadow-2xl border border-slate-200 p-4 flex flex-col gap-4 relative overflow-hidden">
+                    <div className="bg-white rounded-xl shadow-2xl border border-slate-200 p-4 flex flex-col gap-4 relative overflow-hidden w-full max-w-sm">
                         {/* KBM Red Accent Line */}
                         <div className="absolute top-0 left-0 right-0 h-1 bg-[#cd1717]" />
 
