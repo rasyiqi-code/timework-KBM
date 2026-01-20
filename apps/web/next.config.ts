@@ -57,8 +57,11 @@ const withPWA = withPWAInit({
   },
 });
 
+import path from "path";
+
 const nextConfig: NextConfig = {
   output: 'standalone',
+  outputFileTracingRoot: path.join(__dirname, '../../'),
   transpilePackages: ['@repo/database', '@stackframe/stack'],
   images: {
     remotePatterns: [
