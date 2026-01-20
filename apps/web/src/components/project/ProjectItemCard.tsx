@@ -376,23 +376,10 @@ export function ProjectItemCard({ item, users, currentUser, dict, projectOwnerId
                             (() => {
                                 if (!canEdit) return null;
 
-                                if (isUploadMissing) {
-                                    return (
-                                        <div className="relative z-20">
-                                            <FileUploader
-                                                projectId={item.projectId}
-                                                taskId={item.id}
-                                                onUploadComplete={() => router.refresh()}
-                                                variant="compact"
-                                                label="Upload Required"
-                                                className="bg-red-50 text-red-600 border-red-200 hover:bg-red-100 hover:border-red-300 hover:text-red-700"
-                                            />
-                                        </div>
-                                    );
-                                }
-
                                 return (
-                                    <div className="flex items-center gap-1">
+
+                                    <div className="flex items-center gap-1 justify-end">
+                                        {/* Skip Button - Visible if not Done/Skipped, even if upload required */}
                                         {item.status !== 'DONE' && item.status !== 'SKIPPED' && (
                                             <button
                                                 onClick={(e) => {
@@ -407,32 +394,46 @@ export function ProjectItemCard({ item, users, currentUser, dict, projectOwnerId
                                                 <SkipForward size={14} className="text-white fill-white" />
                                             </button>
                                         )}
-                                        <button
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                handleStatusChange(item.id, item.status === 'DONE' ? 'OPEN' : 'DONE');
-                                            }}
-                                            disabled={isPending}
-                                            className={`
+
+                                        {/* Main Action Button or Upload Warning */}
+                                        {isUploadMissing && item.status !== 'SKIPPED' && item.status !== 'DONE' ? (
+                                            <div className="relative z-20">
+                                                <FileUploader
+                                                    projectId={item.projectId}
+                                                    taskId={item.id}
+                                                    onUploadComplete={() => router.refresh()}
+                                                    variant="compact"
+                                                    label="Upload Required"
+                                                    className="bg-red-50 text-red-600 border-red-200 hover:bg-red-100 hover:border-red-300 hover:text-red-700 h-7"
+                                                />
+                                            </div>
+                                        ) : (
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    const targetStatus = (item.status === 'DONE' || item.status === 'SKIPPED') ? 'OPEN' : 'DONE';
+                                                    handleStatusChange(item.id, targetStatus);
+                                                }}
+                                                disabled={isPending}
+                                                className={`
                                                 h-7 px-3 rounded-md text-xs font-semibold transition-all border shadow-sm flex items-center gap-1.5 cursor-pointer
                                                 ${isPending ? 'opacity-70 cursor-wait' : ''}
-                                                ${item.status === 'DONE'
+                                                {(item.status === 'DONE' || item.status === 'SKIPPED')
                                                     ? 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-800'
                                                     : 'bg-[#cd1717] border-[#cd1717] text-white hover:bg-[#a50f0f] dark:bg-[#cd1717] dark:hover:bg-[#a50f0f]'}
                                             `}
-                                        >
-                                            {isPending ? (
-                                                '...'
-                                            ) : item.status === 'DONE' ? (
-                                                dict.project.detail.reopen
-                                            ) : isUnassigned ? (
-                                                dict.project.detail.take
-                                            ) : item.status === 'SKIPPED' ? (
-                                                <><span>⏭</span> {dict.project.detail.skipped || 'Skipped'}</>
-                                            ) : (
-                                                <><span>✓</span> {dict.project.detail.done}</>
-                                            )}
-                                        </button>
+                                            >
+                                                {isPending ? (
+                                                    '...'
+                                                ) : (item.status === 'DONE' || item.status === 'SKIPPED') ? (
+                                                    dict.project.detail.reopen
+                                                ) : isUnassigned ? (
+                                                    dict.project.detail.take
+                                                ) : (
+                                                    <><span>✓</span> {dict.project.detail.done}</>
+                                                )}
+                                            </button>
+                                        )}
                                     </div>
                                 );
                             })()
