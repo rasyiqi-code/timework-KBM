@@ -401,7 +401,7 @@ export function ProjectItemCard({ item, users, currentUser, dict, projectOwnerId
                                                         handleStatusChange(item.id, 'SKIPPED');
                                                     }
                                                 }}
-                                                className="w-7 h-7 flex items-center justify-center rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all dark:hover:bg-slate-800"
+                                                className="w-7 h-7 flex items-center justify-center rounded-md border border-red-200 bg-red-50 text-red-600 hover:bg-red-100 hover:border-red-300 transition-all dark:bg-red-900/20 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/40"
                                                 title="Skip Task"
                                             >
                                                 <span className="text-[10px] font-bold">⏭</span>
