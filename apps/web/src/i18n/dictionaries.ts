@@ -26,6 +26,7 @@ export const dictionaries = {
             signOut: 'Keluar',
             getStarted: 'Lihat Alur Naskah',
             projectForm: 'Formulir Alur Naskah',
+            insight: 'Insight',
         },
         protocol: {
             titlePlaceholder: 'Ketik judul tugas baru...',
@@ -256,6 +257,7 @@ export const dictionaries = {
             signOut: 'Sign Out',
             getStarted: 'Get Started',
             projectForm: 'Project Form',
+            insight: 'Insight',
         },
         protocol: {
             titlePlaceholder: 'Type new task title...',

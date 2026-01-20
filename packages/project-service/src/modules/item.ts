@@ -91,6 +91,9 @@ export async function updateItemStatus(prisma: PrismaClient, ctx: ProjectContext
             assignees: { select: { id: true } },
             projectId: true,
             title: true,
+            status: true,
+            startDate: true,
+            // endDate: true, // Not strictly needed for logic but good for debugging if we logged it
             project: {
                 select: { createdById: true }
             }
@@ -113,9 +116,29 @@ export async function updateItemStatus(prisma: PrismaClient, ctx: ProjectContext
         }
     }
 
+    const now = new Date();
+    const dataUpdate: any = { status: newStatus };
+
+    if (newStatus === 'DONE') {
+        dataUpdate.endDate = now;
+        // Ensure start date is set if it wasn't (e.g. fast completion)
+        if (!itemToCheck.startDate) {
+            dataUpdate.startDate = now;
+        }
+    } else if (newStatus === 'OPEN' || newStatus === 'IN_PROGRESS') {
+        // Set start date if this is the first time it opens
+        if (!itemToCheck.startDate) {
+            dataUpdate.startDate = now;
+        }
+        // If we are reopening, clear the end date
+        if (itemToCheck.status === 'DONE') {
+            dataUpdate.endDate = null;
+        }
+    }
+
     const item = await prisma.projectItem.update({
         where: { id: itemId },
-        data: { status: newStatus },
+        data: dataUpdate,
         include: { project: true, files: { select: { id: true } } }
     });
 
