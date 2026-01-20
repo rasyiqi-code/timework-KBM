@@ -3,8 +3,9 @@
 import Link from 'next/link';
 import { format } from 'date-fns';
 import { type Dictionary } from '@/i18n/dictionaries';
-import { Trash2, Loader2 } from 'lucide-react';
+import { Trash2, Loader2, Download } from 'lucide-react';
 import { deleteProject, getProjectsMatrix } from '@/actions/project';
+import * as XLSX from 'xlsx';
 import { toast } from 'sonner';
 import { useState, useTransition, useEffect } from 'react';
 
@@ -109,6 +110,62 @@ export function ProjectTable({ projects: initialProjects, headers, dict, nextCur
                 }
             });
         }
+    };
+
+    const handleExport = () => {
+        const rows = filteredProjects.map(project => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const total = project.items.length;
+            const done = project.items.filter(i => i.status === 'DONE').length;
+            const percent = total > 0 ? Math.round((done / total) * 100) : 0;
+            const effectiveStatus = percent === 100 ? 'COMPLETED' : project.status;
+
+            // Base Row Data
+            const rowData: Record<string, string | number> = {
+                'Project Title': project.title,
+                'Status': effectiveStatus,
+                'Progress (%)': percent,
+                'Completed Steps': `${done}/${total}`,
+            };
+
+            // Dynamic Columns (Steps)
+            headers.forEach(header => {
+                const item = project.items.find(i =>
+                    i.originProtocolItemId === header.id ||
+                    (i.title === header.title && !i.originProtocolItemId)
+                );
+
+                if (item) {
+                    const isDone = item.status === 'DONE';
+                    // Format: "DONE (Date) (Time)" or "STATUS"
+                    rowData[header.title] = isDone
+                        ? `DONE (${format(new Date(item.updatedAt), 'dd/MM/yyyy HH:mm')})`
+                        : dict.project.status[item.status as keyof typeof dict.project.status] || item.status;
+                } else {
+                    rowData[header.title] = '-';
+                }
+            });
+
+            return rowData;
+        });
+
+        // Create Worksheet
+        const worksheet = XLSX.utils.json_to_sheet(rows);
+
+        // Adjust Column Widths (Optional but good for UX)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const colWidths = Object.keys(rows[0] || {}).map(key => ({
+            wch: Math.max(key.length, 15) // Min width 15 chars
+        }));
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (worksheet as any)['!cols'] = colWidths;
+
+        // Create Workbook
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Projects");
+
+        // Download
+        XLSX.writeFile(workbook, `Timework_Export_${format(new Date(), 'yyyy-MM-dd_HHmm')}.xlsx`);
     };
 
     const handleLoadMore = async () => {
@@ -241,6 +298,16 @@ export function ProjectTable({ projects: initialProjects, headers, dict, nextCur
                             <option value="COMPLETED">{dict.project.status.COMPLETED}</option>
                         </select>
                     </div>
+
+                    {/* Export Button */}
+                    <button
+                        onClick={handleExport}
+                        className="flex items-center gap-2 px-3 py-1.5 text-xs sm:text-sm font-medium text-slate-700 bg-white border border-slate-200 rounded-md hover:bg-slate-50 focus:outline-none focus:ring-[#cd1717] focus:border-[#cd1717] dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-700 transition-colors shadow-sm"
+                        title="Export to Excel"
+                    >
+                        <Download size={14} />
+                        <span className="hidden sm:inline">Export</span>
+                    </button>
                 </div>
             </div>
 
