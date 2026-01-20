@@ -4,7 +4,7 @@ import { useState, useTransition } from 'react';
 import { updateItemStatus } from '@/actions/project';
 import { useRouter } from 'next/navigation';
 import { AssigneeSelector } from './AssigneeSelector';
-import { FolderOpen, StickyNote, CheckSquare } from 'lucide-react';
+import { FolderOpen, StickyNote, CheckSquare, SkipForward } from 'lucide-react';
 import { type ProjectItem, type ItemDependency } from '@repo/database';
 import { type Dictionary } from '@/i18n/dictionaries';
 import { toast } from 'sonner';
@@ -404,7 +404,7 @@ export function ProjectItemCard({ item, users, currentUser, dict, projectOwnerId
                                                 className="w-7 h-7 flex items-center justify-center rounded-md bg-[#cd1717] text-white hover:bg-[#a50f0f] shadow-sm transition-all dark:bg-[#cd1717] dark:hover:bg-[#a50f0f]"
                                                 title="Skip Task"
                                             >
-                                                <span className="text-[10px] font-bold">⏭</span>
+                                                <SkipForward size={14} className="text-white fill-white" />
                                             </button>
                                         )}
                                         <button
