@@ -131,7 +131,7 @@ export default async function RootLayout({
                 </main>
                 <Toaster />
                 <InstallPrompt />
-                {/* <ServiceWorkerRegister /> */}
+                <ServiceWorkerRegister />
               </TooltipProvider>
             </StackTheme>
           </StackProvider>

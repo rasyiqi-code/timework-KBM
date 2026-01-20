@@ -35,18 +35,6 @@ export function InstallPrompt() {
             setShowPrompt(true);
         };
 
-        // Register the manual Service Worker
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker
-                .register('/sw.js')
-                .then((registration) => {
-                    console.log('SW Registered:', registration);
-                })
-                .catch((error) => {
-                    console.error('SW Registration failed:', error);
-                });
-        }
-
         window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
 
         return () => {
