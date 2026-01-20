@@ -58,6 +58,7 @@ const withPWA = withPWAInit({
 });
 
 const nextConfig: NextConfig = {
+  output: 'standalone',
   transpilePackages: ['@repo/database', '@stackframe/stack'],
   images: {
     remotePatterns: [
