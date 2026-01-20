@@ -198,33 +198,16 @@ export function ProjectItemCard({ item, users, currentUser, dict, projectOwnerId
                 {/* Per-Card Edit Toggle: Top Right Corner */}
                 <div className="absolute top-1.5 right-1.5 flex items-center gap-1 z-10">
                     {item.status !== 'LOCKED' && showEditToggle && (
-                        <div className="flex items-center gap-1">
-                            {isEditMode && (
-                                <button
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        if (confirm('Skip this task?')) {
-                                            handleStatusChange(item.id, 'SKIPPED');
-                                            setIsEditMode(false);
-                                        }
-                                    }}
-                                    className="p-0.5 rounded-md hover:bg-slate-100 text-slate-300 hover:text-slate-600 transition-all dark:hover:bg-slate-800"
-                                    title="Skip Task"
-                                >
-                                    <span className="text-[10px] block w-3 h-3 text-center leading-3 font-bold">⏭</span>
-                                </button>
-                            )}
-                            <button
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    setIsEditMode(!isEditMode);
-                                }}
-                                className={`p-0.5 rounded-md hover:bg-slate-100 text-slate-300 hover:text-slate-600 transition-all dark:hover:bg-slate-800 ${isEditMode ? 'text-amber-500 bg-amber-50 dark:bg-amber-900/40' : ''}`}
-                                title={isEditMode ? dict.project.detail.lockAssignments : dict.project.detail.unlockAssignments}
-                            >
-                                <span className="text-[10px] block w-3 h-3 text-center leading-3">{isEditMode ? '🔓' : '🔒'}</span>
-                            </button>
-                        </div>
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setIsEditMode(!isEditMode);
+                            }}
+                            className={`p-0.5 rounded-md hover:bg-slate-100 text-slate-300 hover:text-slate-600 transition-all dark:hover:bg-slate-800 ${isEditMode ? 'text-amber-500 bg-amber-50 dark:bg-amber-900/40' : ''}`}
+                            title={isEditMode ? dict.project.detail.lockAssignments : dict.project.detail.unlockAssignments}
+                        >
+                            <span className="text-[10px] block w-3 h-3 text-center leading-3">{isEditMode ? '🔓' : '🔒'}</span>
+                        </button>
                     )}
                 </div>
 
@@ -410,6 +393,20 @@ export function ProjectItemCard({ item, users, currentUser, dict, projectOwnerId
 
                                 return (
                                     <div className="flex items-center gap-1">
+                                        {item.status !== 'DONE' && item.status !== 'SKIPPED' && (
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    if (confirm('Skip this task?')) {
+                                                        handleStatusChange(item.id, 'SKIPPED');
+                                                    }
+                                                }}
+                                                className="w-7 h-7 flex items-center justify-center rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all dark:hover:bg-slate-800"
+                                                title="Skip Task"
+                                            >
+                                                <span className="text-[10px] font-bold">⏭</span>
+                                            </button>
+                                        )}
                                         <button
                                             onClick={(e) => {
                                                 e.stopPropagation();
