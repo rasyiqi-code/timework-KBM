@@ -58,6 +58,36 @@ export function ProjectTable({ projects: initialProjects, headers, dict, nextCur
     const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState<'ALL' | 'ACTIVE' | 'COMPLETED'>('ALL');
     const [protocolFilter, setProtocolFilter] = useState<string>('ALL');
+    const [colorFilter, setColorFilter] = useState<string | null>(null);
+
+    // Extract Color Logic for reuse
+    const getProjectColor = (project: ProjectTableProps['projects'][0]) => {
+        const total = project.items.length;
+        const done = project.items.filter(i => i.status === 'DONE' || i.status === 'SKIPPED');
+
+        // 1. All Done -> Green (Global Rule)
+        if (total > 0 && done.length === total) {
+            return { color: '#d1fae5', label: 'All Completed' }; // Emerald-100ish
+        }
+
+        // 2. Check for completion effects
+        if (done.length > 0) {
+            const lastDone = [...done].sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())[0];
+            const meta = lastDone.metadata as unknown as ProjectItemMetadata;
+            const rowColor = meta?.completionEffect?.rowColor;
+
+            if (rowColor) {
+                // Handle Legacy Classes -> Hex Map
+                if (rowColor.includes('red-50') || rowColor.includes('red-100')) return { color: '#fee2e2', label: lastDone.title };
+                if (rowColor.includes('amber-50') || rowColor.includes('amber-100')) return { color: '#fef3c7', label: lastDone.title };
+                if (rowColor.includes('emerald-50') || rowColor.includes('emerald-100')) return { color: '#d1fae5', label: lastDone.title };
+
+                // Assume Hex
+                return { color: rowColor, label: lastDone.title };
+            }
+        }
+        return null;
+    };
 
     // Resizable Column Logic State
     const [colWidth, setColWidth] = useState(350);
@@ -192,39 +222,7 @@ export function ProjectTable({ projects: initialProjects, headers, dict, nextCur
         }
     };
 
-    const getProjectRowStyle = (project: ProjectTableProps['projects'][0]) => {
-        const total = project.items.length;
-        const done = project.items.filter(i => i.status === 'DONE' || i.status === 'SKIPPED');
 
-        // 1. All Done -> Green (Global Rule)
-        if (total > 0 && done.length === total) {
-            // We can check if the last item dictates a specific color, if so, prefer that?
-            // Or prefer "All Done" green? 
-            // Let's defer to the explicit metadata of the last item if present, otherwise default to All Done Green?
-            // User prompt said: "Apabila semua tahapan sudah di isi alias clear semuanya maka warna berubah menjadi Hijau"
-            return 'bg-emerald-100 hover:bg-emerald-200 transition-colors dark:bg-emerald-900/20 dark:hover:bg-emerald-900/30';
-        }
-
-        // 2. Check for completion effects
-        if (done.length > 0) {
-            // Sort descending by updatedAt (most recent first)
-            const lastDone = [...done].sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())[0];
-
-            const meta = lastDone.metadata as unknown as ProjectItemMetadata;
-            const rowColor = meta?.completionEffect?.rowColor;
-
-            if (rowColor) {
-                // Map legacy 50 values to 100 for brighter look
-                if (rowColor === 'bg-red-50' || rowColor === 'bg-red-100') return 'bg-red-100 hover:bg-red-200 transition-colors dark:bg-red-900/30 dark:hover:bg-red-900/40';
-                if (rowColor === 'bg-amber-50' || rowColor === 'bg-amber-100') return 'bg-amber-100 hover:bg-amber-200 transition-colors dark:bg-amber-900/30 dark:hover:bg-amber-900/40';
-                if (rowColor === 'bg-emerald-50' || rowColor === 'bg-emerald-100') return 'bg-emerald-100 hover:bg-emerald-200 transition-colors dark:bg-emerald-900/30 dark:hover:bg-emerald-900/40';
-                return rowColor;
-            }
-        }
-
-        // Default
-        return 'hover:bg-slate-50/50 transition-colors dark:hover:bg-slate-800/30';
-    };
 
     const filteredProjects = projects.filter(project => {
         const matchesSearch = project.title.toLowerCase().includes(searchQuery.toLowerCase());
@@ -244,6 +242,18 @@ export function ProjectTable({ projects: initialProjects, headers, dict, nextCur
         const matchesProtocol = protocolFilter === 'ALL' || (project as any).protocolId === protocolFilter;
 
         return matchesSearch && matchesStatus && matchesProtocol;
+    }).sort((a, b) => {
+        if (!colorFilter) return 0;
+
+        const infoA = getProjectColor(a);
+        const infoB = getProjectColor(b);
+
+        const aMatches = infoA?.color === colorFilter;
+        const bMatches = infoB?.color === colorFilter;
+
+        if (aMatches && !bMatches) return -1;
+        if (!aMatches && bMatches) return 1;
+        return 0;
     });
 
     if (projects.length === 0) {
@@ -310,6 +320,46 @@ export function ProjectTable({ projects: initialProjects, headers, dict, nextCur
                     </div>
                 </div>
 
+                {/* Color Legend / Filter */}
+                <div className="flex items-center gap-1.5 border-l border-slate-200 pl-3 ml-1 dark:border-slate-700 overflow-x-auto max-w-[50vw] sm:max-w-none no-scrollbar">
+                    {(() => {
+                        // Dynamically generate legend from Visible Projects
+                        const uniqueEffects = new Map<string, string>(); // color -> label
+                        projects.forEach(p => {
+                            const info = getProjectColor(p);
+                            if (info && info.color && !uniqueEffects.has(info.color)) {
+                                uniqueEffects.set(info.color, info.label);
+                            }
+                        });
+
+                        return Array.from(uniqueEffects.entries()).map(([color, label]) => (
+                            <button
+                                key={color}
+                                onClick={() => setColorFilter(prev => prev === color ? null : color)}
+                                className={`h-6 px-2 rounded-full flex items-center gap-1.5 transition-all text-[10px] font-medium border whitespace-nowrap ${colorFilter === color
+                                    ? `ring-2 ring-offset-1 ring-slate-400 border-transparent shadow-sm`
+                                    : 'border-slate-200 hover:scale-105 dark:border-slate-700 bg-white dark:bg-slate-800'
+                                    }`}
+                                title={`Filter: ${label}`}
+                                style={colorFilter === color ? { backgroundColor: color, color: '#000' } : {}}
+                            >
+                                <div className="w-2.5 h-2.5 rounded-full border border-black/10 shadow-sm" style={{ backgroundColor: color }} />
+                                <span className={colorFilter === color ? 'font-bold' : 'text-slate-600 dark:text-slate-300'}>{label}</span>
+                            </button>
+                        ));
+                    })()}
+
+                    {colorFilter && (
+                        <button
+                            onClick={() => setColorFilter(null)}
+                            className="text-xs text-slate-400 hover:text-slate-600 px-1 dark:text-slate-500 dark:hover:text-slate-300 whitespace-nowrap"
+                        >
+                            Clear
+                        </button>
+                    )}
+                </div>
+                {/* End of Color Legend */}
+
                 <button
                     onClick={handleExport}
                     className="flex items-center gap-2 px-3 py-1.5 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors shadow-sm text-xs sm:text-sm font-medium focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1 dark:focus:ring-offset-slate-900"
@@ -366,7 +416,15 @@ export function ProjectTable({ projects: initialProjects, headers, dict, nextCur
                                 const effectiveStatus = percent === 100 ? 'COMPLETED' : project.status;
 
                                 return (
-                                    <tr key={project.id} className={getProjectRowStyle(project)}>
+                                    <tr
+                                        key={project.id}
+                                        className="hover:shadow-sm transition-all border-b border-slate-100 dark:border-slate-800"
+                                        style={(() => {
+                                            const info = getProjectColor(project);
+                                            if (info?.color) return { backgroundColor: info.color + '40' }; // 25% opacity for row
+                                            return {};
+                                        })()}
+                                    >
                                         {/* Project Title Column */}
                                         <td
                                             className="px-4 py-2 sticky left-0 bg-white z-10 dark:bg-slate-900 border-r border-slate-100 dark:border-slate-800"
@@ -471,18 +529,19 @@ export function ProjectTable({ projects: initialProjects, headers, dict, nextCur
                 </table>
             </div >
 
-            {nextCursor && (
-                <div className="flex justify-center pt-2">
-                    <button
-                        onClick={handleLoadMore}
-                        disabled={isLoadingMore}
-                        className="flex items-center gap-2 px-6 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all shadow-sm disabled:opacity-50"
-                    >
-                        {isLoadingMore ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-                        {isLoadingMore ? dict.project.loadingMore : dict.project.loadMore}
-                    </button>
-                </div>
-            )
+            {
+                nextCursor && (
+                    <div className="flex justify-center pt-2">
+                        <button
+                            onClick={handleLoadMore}
+                            disabled={isLoadingMore}
+                            className="flex items-center gap-2 px-6 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all shadow-sm disabled:opacity-50"
+                        >
+                            {isLoadingMore ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+                            {isLoadingMore ? dict.project.loadingMore : dict.project.loadMore}
+                        </button>
+                    </div>
+                )
             }
         </div >
     );

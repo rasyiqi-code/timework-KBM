@@ -64,9 +64,14 @@ export function ProtocolItemRow({ item, index, allItems, users }: ProtocolItemRo
     const [rowEffect, setRowEffect] = useState<string>(() => {
         const meta = item.metadata as unknown as ProtocolItemMetadata;
         const stored = meta?.completionEffect?.rowColor || '';
-        if (stored === 'bg-red-50') return 'bg-red-100';
-        if (stored === 'bg-amber-50') return 'bg-amber-100';
-        if (stored === 'bg-emerald-50') return 'bg-emerald-100';
+        // Legacy Map
+        if (stored === 'bg-red-50') return '#fee2e2'; // red-100
+        if (stored === 'bg-red-100') return '#fee2e2';
+        if (stored === 'bg-amber-50') return '#fef3c7'; // amber-100
+        if (stored === 'bg-amber-100') return '#fef3c7';
+        if (stored === 'bg-emerald-50') return '#d1fae5'; // emerald-100
+        if (stored === 'bg-emerald-100') return '#d1fae5';
+
         return stored;
     });
 
@@ -143,10 +148,12 @@ export function ProtocolItemRow({ item, index, allItems, users }: ProtocolItemRo
         setColor(item.color || '#6366f1');
         const meta = item.metadata as unknown as ProtocolItemMetadata;
         const storedParams = meta?.completionEffect?.rowColor || '';
+        // Same legacy mapping for cancel revert
         let normalizedParams = storedParams;
-        if (storedParams === 'bg-red-50') normalizedParams = 'bg-red-100';
-        if (storedParams === 'bg-amber-50') normalizedParams = 'bg-amber-100';
-        if (storedParams === 'bg-emerald-50') normalizedParams = 'bg-emerald-100';
+        if (storedParams === 'bg-red-50' || storedParams === 'bg-red-100') normalizedParams = '#fee2e2';
+        else if (storedParams === 'bg-amber-50' || storedParams === 'bg-amber-100') normalizedParams = '#fef3c7';
+        else if (storedParams === 'bg-emerald-50' || storedParams === 'bg-emerald-100') normalizedParams = '#d1fae5';
+
         setRowEffect(normalizedParams);
         setIsEditing(false);
     }
@@ -296,22 +303,35 @@ export function ProtocolItemRow({ item, index, allItems, users }: ProtocolItemRo
                             </div>
 
                             {/* Row Effect Dropdown */}
-                            <div className="border-l pl-3 ml-1 border-slate-200 dark:border-slate-700">
-                                <select
-                                    value={rowEffect}
-                                    onChange={(e) => setRowEffect(e.target.value)}
-                                    className={`appearance-none px-2 py-1 text-[10px] font-bold border rounded cursor-pointer focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-all ${rowEffect === 'bg-red-100' || rowEffect === 'bg-red-50' ? 'bg-red-100 text-red-800 border-red-200' :
-                                        rowEffect === 'bg-amber-100' || rowEffect === 'bg-amber-50' ? 'bg-amber-100 text-amber-800 border-amber-200' :
-                                            rowEffect === 'bg-emerald-100' || rowEffect === 'bg-emerald-50' ? 'bg-emerald-100 text-emerald-800 border-emerald-200' :
-                                                'bg-slate-50 text-slate-500 border-slate-200 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-400'
-                                        }`}
-                                    title="Row Color Effect when this task completes"
-                                >
-                                    <option value="">No Effect</option>
-                                    <option value="bg-red-100">Red Zone (e.g. Printing)</option>
-                                    <option value="bg-amber-100">Yellow Zone (e.g. Payment)</option>
-                                    <option value="bg-emerald-100">Green Zone (e.g. Success)</option>
-                                </select>
+                            {/* Row Effect Color Picker (Visual) */}
+                            <div className="border-l pl-3 ml-1 border-slate-200 dark:border-slate-700 flex items-center gap-2">
+                                <label className="flex items-center gap-1.5 cursor-pointer group/effect" title="Select Row Color Effect">
+                                    <div className="relative">
+                                        <div
+                                            className="w-5 h-5 rounded-full border border-slate-200 shadow-sm transition-transform active:scale-95"
+                                            style={{ backgroundColor: rowEffect || '#f8fafc' }}
+                                        />
+                                        <input
+                                            type="color"
+                                            value={rowEffect && rowEffect.startsWith('#') ? rowEffect : '#ef4444'}
+                                            onChange={(e) => setRowEffect(e.target.value)}
+                                            className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                                        />
+                                    </div>
+                                    <span className="text-[10px] font-bold text-slate-500 group-hover/effect:text-slate-800 transition-colors">
+                                        {rowEffect ? 'Effect On' : 'No Effect'}
+                                    </span>
+                                </label>
+                                {rowEffect && (
+                                    <button
+                                        type="button"
+                                        onClick={() => setRowEffect('')}
+                                        className="text-[10px] text-slate-400 hover:text-red-500 px-1"
+                                        title="Clear Effect"
+                                    >
+                                        Clear
+                                    </button>
+                                )}
                             </div>
                         </div>
 
