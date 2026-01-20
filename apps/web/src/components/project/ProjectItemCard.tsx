@@ -126,7 +126,8 @@ export function ProjectItemCard({ item, users, currentUser, dict, projectOwnerId
                 {/* The Dot Itself */}
                 <div className={`rounded-full border-2 border-white shadow-sm shrink-0 w-3 h-3
                     ${item.status === 'DONE' ? 'bg-emerald-500 ring-2 ring-emerald-50' :
-                        item.status === 'OPEN' ? 'bg-indigo-500 ring-2 ring-indigo-50' : 'bg-slate-300'}
+                        item.status === 'SKIPPED' ? 'bg-slate-400 ring-2 ring-slate-100' :
+                            item.status === 'OPEN' ? 'bg-indigo-500 ring-2 ring-indigo-50' : 'bg-slate-300'}
                 `}></div>
 
                 {/* Left Side: Date & Delete (Swap on Hover) */}
@@ -197,16 +198,33 @@ export function ProjectItemCard({ item, users, currentUser, dict, projectOwnerId
                 {/* Per-Card Edit Toggle: Top Right Corner */}
                 <div className="absolute top-1.5 right-1.5 flex items-center gap-1 z-10">
                     {item.status !== 'LOCKED' && showEditToggle && (
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                setIsEditMode(!isEditMode);
-                            }}
-                            className={`p-0.5 rounded-md hover:bg-slate-100 text-slate-300 hover:text-slate-600 transition-all dark:hover:bg-slate-800 ${isEditMode ? 'text-amber-500 bg-amber-50 dark:bg-amber-900/40' : ''}`}
-                            title={isEditMode ? dict.project.detail.lockAssignments : dict.project.detail.unlockAssignments}
-                        >
-                            <span className="text-[10px] block w-3 h-3 text-center leading-3">{isEditMode ? '🔓' : '🔒'}</span>
-                        </button>
+                        <div className="flex items-center gap-1">
+                            {isEditMode && (
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        if (confirm('Skip this task?')) {
+                                            handleStatusChange(item.id, 'SKIPPED');
+                                            setIsEditMode(false);
+                                        }
+                                    }}
+                                    className="p-0.5 rounded-md hover:bg-slate-100 text-slate-300 hover:text-slate-600 transition-all dark:hover:bg-slate-800"
+                                    title="Skip Task"
+                                >
+                                    <span className="text-[10px] block w-3 h-3 text-center leading-3 font-bold">⏭</span>
+                                </button>
+                            )}
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    setIsEditMode(!isEditMode);
+                                }}
+                                className={`p-0.5 rounded-md hover:bg-slate-100 text-slate-300 hover:text-slate-600 transition-all dark:hover:bg-slate-800 ${isEditMode ? 'text-amber-500 bg-amber-50 dark:bg-amber-900/40' : ''}`}
+                                title={isEditMode ? dict.project.detail.lockAssignments : dict.project.detail.unlockAssignments}
+                            >
+                                <span className="text-[10px] block w-3 h-3 text-center leading-3">{isEditMode ? '🔓' : '🔒'}</span>
+                            </button>
+                        </div>
                     )}
                 </div>
 
@@ -216,7 +234,8 @@ export function ProjectItemCard({ item, users, currentUser, dict, projectOwnerId
                         {/* Status Pill */}
                         <div className={`shrink-0 w-1.5 h-1.5 rounded-full ${item.status === 'OPEN' ? 'bg-[#cd1717]' :
                             item.status === 'IN_PROGRESS' ? 'bg-amber-500' :
-                                item.status === 'DONE' ? 'bg-emerald-500' : 'bg-slate-300'
+                                item.status === 'DONE' ? 'bg-emerald-500' :
+                                    item.status === 'SKIPPED' ? 'bg-slate-400' : 'bg-slate-300'
                             }`}></div>
 
                         <div className="min-w-0 flex-1 relative">
@@ -411,6 +430,8 @@ export function ProjectItemCard({ item, users, currentUser, dict, projectOwnerId
                                                 dict.project.detail.reopen
                                             ) : isUnassigned ? (
                                                 dict.project.detail.take
+                                            ) : item.status === 'SKIPPED' ? (
+                                                <><span>⏭</span> {dict.project.detail.skipped || 'Skipped'}</>
                                             ) : (
                                                 <><span>✓</span> {dict.project.detail.done}</>
                                             )}

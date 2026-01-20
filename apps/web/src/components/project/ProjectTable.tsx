@@ -102,7 +102,7 @@ export function ProjectTable({ projects: initialProjects, headers, dict, nextCur
             // Prepare data for export
             const exportData = filteredProjects.map(project => {
                 const total = project.items.length;
-                const done = project.items.filter(i => i.status === 'DONE').length;
+                const done = project.items.filter(i => i.status === 'DONE' || i.status === 'SKIPPED').length;
                 const percent = total > 0 ? Math.round((done / total) * 100) : 0;
 
                 // Base fields
@@ -122,9 +122,15 @@ export function ProjectTable({ projects: initialProjects, headers, dict, nextCur
 
                     if (item) {
                         const statusLabel = dict.project.status[item.status as keyof typeof dict.project.status]?.replace('_', ' ') || item.status;
-                        const dateStr = item.status === 'DONE' ? format(new Date(item.updatedAt), 'dd/MM/yyyy HH:mm') : '';
+                        const dateStr = (item.status === 'DONE' || item.status === 'SKIPPED') ? format(new Date(item.updatedAt), 'dd/MM/yyyy HH:mm') : '';
 
-                        row[header.title] = item.status === 'DONE' ? `DONE (${dateStr})` : statusLabel;
+                        if (item.status === 'DONE') {
+                            row[header.title] = `DONE (${dateStr})`;
+                        } else if (item.status === 'SKIPPED') {
+                            row[header.title] = `SKIPPED (${dateStr})`;
+                        } else {
+                            row[header.title] = statusLabel;
+                        }
                     } else {
                         row[header.title] = '-';
                     }
@@ -188,7 +194,7 @@ export function ProjectTable({ projects: initialProjects, headers, dict, nextCur
 
     const getProjectRowStyle = (project: ProjectTableProps['projects'][0]) => {
         const total = project.items.length;
-        const done = project.items.filter(i => i.status === 'DONE');
+        const done = project.items.filter(i => i.status === 'DONE' || i.status === 'SKIPPED');
 
         // 1. All Done -> Green (Global Rule)
         if (total > 0 && done.length === total) {
@@ -225,7 +231,7 @@ export function ProjectTable({ projects: initialProjects, headers, dict, nextCur
 
         // Dynamic Status Logic for Filter
         const total = project.items.length;
-        const done = project.items.filter(i => i.status === 'DONE').length;
+        const done = project.items.filter(i => i.status === 'DONE' || i.status === 'SKIPPED').length;
         const percent = total > 0 ? Math.round((done / total) * 100) : 0;
         const effectiveStatus = percent === 100 ? 'COMPLETED' : project.status;
 
@@ -355,7 +361,7 @@ export function ProjectTable({ projects: initialProjects, headers, dict, nextCur
                             filteredProjects.map(project => {
                                 // Calculate Status dynamically
                                 const total = project.items.length;
-                                const done = project.items.filter(i => i.status === 'DONE').length;
+                                const done = project.items.filter(i => i.status === 'DONE' || i.status === 'SKIPPED').length;
                                 const percent = total > 0 ? Math.round((done / total) * 100) : 0;
                                 const effectiveStatus = percent === 100 ? 'COMPLETED' : project.status;
 
@@ -417,15 +423,16 @@ export function ProjectTable({ projects: initialProjects, headers, dict, nextCur
                                             }
 
                                             const isDone = item.status === 'DONE';
+                                            const isSkipped = item.status === 'SKIPPED';
 
                                             return (
-                                                <td key={header.id} className={`px-4 py-2 border-l border-slate-100 dark:border-slate-800 whitespace-nowrap ${isDone ? 'bg-emerald-50/10' : ''}`}>
-                                                    {isDone ? (
+                                                <td key={header.id} className={`px-4 py-2 border-l border-slate-100 dark:border-slate-800 whitespace-nowrap ${isDone ? 'bg-emerald-50/10' : isSkipped ? 'bg-slate-50/50' : ''}`}>
+                                                    {isDone || isSkipped ? (
                                                         <div className="flex flex-col">
-                                                            <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400">
-                                                                {format(new Date(item.updatedAt), 'dd/MM/yyyy')}
+                                                            <span className={`text-xs font-bold ${isDone ? 'text-emerald-700 dark:text-emerald-400' : 'text-slate-500 dark:text-slate-400'}`}>
+                                                                {isSkipped ? '⏭ SKIPPED' : format(new Date(item.updatedAt), 'dd/MM/yyyy')}
                                                             </span>
-                                                            <span className="text-[10px] text-emerald-600/70 dark:text-emerald-500/70">
+                                                            <span className={`text-[10px] ${isDone ? 'text-emerald-600/70 dark:text-emerald-500/70' : 'text-slate-400/70 dark:text-slate-500/70'}`}>
                                                                 {format(new Date(item.updatedAt), 'HH:mm')}
                                                             </span>
                                                         </div>
