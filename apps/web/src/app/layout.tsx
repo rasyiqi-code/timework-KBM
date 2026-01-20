@@ -68,6 +68,7 @@ import { getCurrentUser } from "@/actions/auth";
 import { getDictionary, getLocale } from '@/i18n/server';
 import { Suspense } from "react";
 import { InstallPrompt } from "@/components/pwa/InstallPrompt";
+import { ServiceWorkerRegister } from "@/components/pwa/ServiceWorkerRegister";
 
 export default async function RootLayout({
   children,
@@ -130,6 +131,7 @@ export default async function RootLayout({
                 </main>
                 <Toaster />
                 <InstallPrompt />
+                <ServiceWorkerRegister />
               </TooltipProvider>
             </StackTheme>
           </StackProvider>
