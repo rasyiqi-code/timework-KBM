@@ -418,9 +418,9 @@ export function ProjectItemCard({ item, users, currentUser, dict, projectOwnerId
                                                 className={`
                                                 h-7 px-3 rounded-md text-xs font-semibold transition-all border shadow-sm flex items-center gap-1.5 cursor-pointer
                                                 ${isPending ? 'opacity-70 cursor-wait' : ''}
-                                                {(item.status === 'DONE' || item.status === 'SKIPPED')
-                                                    ? 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-800'
-                                                    : 'bg-[#cd1717] border-[#cd1717] text-white hover:bg-[#a50f0f] dark:bg-[#cd1717] dark:hover:bg-[#a50f0f]'}
+                                                ${(item.status === 'DONE' || item.status === 'SKIPPED')
+                                                        ? 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-800'
+                                                        : 'bg-[#cd1717] border-[#cd1717] text-white hover:bg-[#a50f0f] dark:bg-[#cd1717] dark:hover:bg-[#a50f0f]'}
                                             `}
                                             >
                                                 {isPending ? (
