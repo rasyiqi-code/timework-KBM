@@ -26,6 +26,7 @@ type ProtocolItemMetadata = {
     completionEffect?: {
         rowColor: string | null;
     } | null;
+    allowSkip?: boolean;
 };
 
 interface ProtocolItemRowProps {
@@ -74,6 +75,10 @@ export function ProtocolItemRow({ item, index, allItems, users }: ProtocolItemRo
 
         return stored;
     });
+    const [allowSkip, setAllowSkip] = useState<boolean>(() => {
+        const meta = item.metadata as unknown as ProtocolItemMetadata;
+        return meta?.allowSkip || false;
+    });
 
     // Optimistic UI Hook
     const [optimisticItem, addOptimisticItem] = useOptimistic(
@@ -101,7 +106,8 @@ export function ProtocolItemRow({ item, index, allItems, users }: ProtocolItemRo
                 defaultAssignee: selectedUsers.length > 0 ? selectedUsers[0] : null,
                 defaultAssignees: selectedUsers,
                 requireAttachment,
-                color
+                color,
+                // Optimistic metadata update is tricky without full object, but UI doesn't depend on it for list view much except rowColor
             });
 
             // 2. Close Form UI Immediately
@@ -119,14 +125,13 @@ export function ProtocolItemRow({ item, index, allItems, users }: ProtocolItemRo
                 formData.append('requireAttachment', String(requireAttachment));
                 formData.append('color', color);
 
+                const metadataPayload: ProtocolItemMetadata = { allowSkip };
                 if (rowEffect) {
-                    const metadata = { completionEffect: { rowColor: rowEffect } };
-                    formData.append('metadata', JSON.stringify(metadata));
+                    metadataPayload.completionEffect = { rowColor: rowEffect };
                 } else {
-                    // Send empty metadata to clear it if needed, or handle partial updates carefully. 
-                    // Ideally we merge, but for now strict replacement is safer for this specific field.
-                    formData.append('metadata', JSON.stringify({ completionEffect: null }));
+                    metadataPayload.completionEffect = null;
                 }
+                formData.append('metadata', JSON.stringify(metadataPayload));
 
 
                 await updateProtocolItem(item.id, formData);
@@ -155,6 +160,7 @@ export function ProtocolItemRow({ item, index, allItems, users }: ProtocolItemRo
         else if (storedParams === 'bg-emerald-50' || storedParams === 'bg-emerald-100') normalizedParams = '#d1fae5';
 
         setRowEffect(normalizedParams);
+        setAllowSkip(meta?.allowSkip || false);
         setIsEditing(false);
     }
 
@@ -290,6 +296,16 @@ export function ProtocolItemRow({ item, index, allItems, users }: ProtocolItemRo
                                     className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 dark:bg-slate-800 dark:border-slate-700"
                                 />
                                 <span>Require File Upload</span>
+                            </label>
+
+                            <label className="flex items-center gap-2 text-[10px] text-slate-500 cursor-pointer select-none hover:text-slate-800 transition-colors dark:text-slate-400 dark:hover:text-slate-200">
+                                <input
+                                    type="checkbox"
+                                    checked={allowSkip}
+                                    onChange={(e) => setAllowSkip(e.target.checked)}
+                                    className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 dark:bg-slate-800 dark:border-slate-700"
+                                />
+                                <span>Allow Skip</span>
                             </label>
 
                             {/* Color Picker Edit */}

@@ -103,7 +103,7 @@ export async function getInsightStats(): Promise<InsightData> {
         if (durationMs < 0) continue;
 
         // Determine assignee (Handle Multiple & Legacy)
-        let assignee = item.assignees[0] || item.assignedTo;
+        const assignee = item.assignees[0] || item.assignedTo;
 
         if (assignee) {
             const stats = assigneeMap.get(assignee.id) || {

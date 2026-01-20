@@ -60,6 +60,9 @@ export function ProjectItemCard({ item, users, currentUser, dict, projectOwnerId
     // Permissions:
     const isAdHoc = !item.originProtocolItemId;
 
+    // Check Allow Skip
+    const allowSkip = (item.metadata as unknown as { allowSkip?: boolean })?.allowSkip || false;
+
     // Permissions Strategy:
     // 1. Ad-Hoc Items: Creator/Admin has full control (Title, Assignee, Desc, Delete)
     // 2. Standard Items: Title & Assignee are LOCKED. Description/Notes are Editable.
@@ -385,8 +388,8 @@ export function ProjectItemCard({ item, users, currentUser, dict, projectOwnerId
                                 return (
 
                                     <div className="flex items-center gap-1 justify-end">
-                                        {/* Skip Button - Visible if not Done/Skipped, even if upload required */}
-                                        {item.status !== 'DONE' && item.status !== 'SKIPPED' && (
+                                        {/* Skip Button - Visible if not Done/Skipped AND AllowSkip is true */}
+                                        {item.status !== 'DONE' && item.status !== 'SKIPPED' && allowSkip && (
                                             <button
                                                 onClick={(e) => {
                                                     e.stopPropagation();

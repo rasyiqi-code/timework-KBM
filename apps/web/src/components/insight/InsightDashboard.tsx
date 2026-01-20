@@ -127,7 +127,7 @@ export function InsightDashboard({ data }: InsightDashboardProps) {
                         </thead>
                         <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                             {data.assigneeStats?.length > 0 ? (
-                                data.assigneeStats.map((stat, i) => (
+                                data.assigneeStats.map((stat) => (
                                     <tr key={stat.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
                                         <td className="py-2 text-slate-700 dark:text-slate-300 font-medium">
                                             {stat.name || stat.email}

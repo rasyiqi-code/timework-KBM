@@ -1,4 +1,4 @@
-import { PrismaClient, ProjectItem } from '@repo/database';
+import { PrismaClient, ProjectItem, Prisma } from '@repo/database';
 import { ProjectContext } from '../types';
 import { logAction } from '../utils/audit';
 import { detectCycle, buildDependencyGraph } from '../utils/graph';
@@ -117,7 +117,7 @@ export async function updateItemStatus(prisma: PrismaClient, ctx: ProjectContext
     }
 
     const now = new Date();
-    const dataUpdate: any = { status: newStatus };
+    const dataUpdate: Prisma.ProjectItemUpdateInput = { status: newStatus };
 
     if (newStatus === 'DONE') {
         dataUpdate.endDate = now;
