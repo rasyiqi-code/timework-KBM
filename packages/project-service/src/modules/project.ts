@@ -43,6 +43,7 @@ export async function getProjectsMatrix(
                     updatedAt: true,
                     originProtocolItemId: true,
                     metadata: true,
+                    requireAttachment: true,
                     files: {
                         select: {
                             id: true,

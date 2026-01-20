@@ -236,13 +236,33 @@ export function ProjectItemCard({ item, users, currentUser, dict, projectOwnerId
                                 />
                             ) : (
                                 <div className="flex items-baseline gap-2">
-                                    <h3 className={`text-sm font-semibold truncate flex items-center gap-1.5 ${item.status === 'LOCKED' ? 'text-slate-500 dark:text-slate-500' : 'text-slate-700 dark:text-slate-200'}`}>
+                                    <h3 className={`text-sm font-semibold flex items-center gap-1.5 min-w-0 ${item.status === 'LOCKED' ? 'text-slate-500 dark:text-slate-500' : 'text-slate-700 dark:text-slate-200'}`}>
                                         {itemType === 'NOTE' ? (
                                             <StickyNote size={14} className="text-amber-500 shrink-0" />
                                         ) : (
                                             <CheckSquare size={14} className="text-[#cd1717] shrink-0" />
                                         )}
-                                        {item.title}
+                                        <span className="truncate">{item.title}</span>
+                                        {requireAttachment && ((item.files && item.files.length > 0) || item.attachmentUrl) && (
+                                            <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] bg-slate-100 text-slate-500 border border-slate-200 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-400 shrink-0" title="Attachments">
+                                                <Paperclip size={10} />
+                                                <span className="font-medium">{item.files?.length || 1}</span>
+                                            </span>
+                                        )}
+                                        {/* Plus Button for "Adding More" - only if not missing requirement */}
+                                        {(requireAttachment && canEdit && (users.find(u => u.id === currentUser?.id) || isAdmin) && !isUploadMissing) && (
+                                            <div onClick={(e) => e.stopPropagation()} className="leading-none flex items-center">
+                                                <FileUploader
+                                                    projectId={item.projectId}
+                                                    taskId={item.id}
+                                                    onUploadComplete={() => router.refresh()}
+                                                    variant="compact"
+                                                    className="!w-6 !h-6 !p-0 justify-center !bg-transparent text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-all rounded-full flex items-center"
+                                                >
+                                                    <Plus size={18} strokeWidth={3} />
+                                                </FileUploader>
+                                            </div>
+                                        )}
                                     </h3>
                                 </div>
                             )}
@@ -302,25 +322,11 @@ export function ProjectItemCard({ item, users, currentUser, dict, projectOwnerId
                             {/* Attachments Section - File Manager */}
                             {shouldShowAttachment && (isAdmin || isProjectOwner || isAssignedToMe) && (
                                 <div onClick={(e) => e.stopPropagation()} className={`mt-2 pt-2 border-t border-slate-100 dark:border-slate-800 ${!isDetailsExpanded ? 'hidden' : 'block'}`}>
-                                    <div className="flex items-center justify-between mb-2">
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Attachments</span>
-                                            {requireAttachment && (!item.files || item.files.length === 0) && (
-                                                <span className="text-[9px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded font-bold border border-red-200">REQUIRED</span>
-                                            )}
+                                    {requireAttachment && (!item.files || item.files.length === 0) && (
+                                        <div className="mb-2">
+                                            <span className="text-[9px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded font-bold border border-red-200">REQUIRED</span>
                                         </div>
-                                        {(canEdit && (users.find(u => u.id === currentUser?.id) || isAdmin) && !isUploadMissing) && (
-                                            <FileUploader
-                                                projectId={item.projectId}
-                                                taskId={item.id}
-                                                onUploadComplete={() => router.refresh()}
-                                                variant="compact"
-                                                className="w-9 h-9 px-0 justify-center bg-transparent text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200 transition-all rounded-full"
-                                            >
-                                                <Plus size={24} strokeWidth={2.5} />
-                                            </FileUploader>
-                                        )}
-                                    </div>
+                                    )}
 
                                     {/* Mini File List */}
                                     <div className="space-y-1">

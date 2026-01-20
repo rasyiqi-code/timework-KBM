@@ -408,12 +408,30 @@ export function ProtocolItemRow({ item, index, allItems, users }: ProtocolItemRo
                                             </button>
                                         )}
                                     </div>
-                                    <div className="flex gap-1 mt-0.5">
+                                    <div className="flex gap-1 mt-0.5 items-center">
                                         {optimisticItem.requireAttachment && (
                                             <span className="text-[9px] font-bold text-slate-500 bg-slate-100 px-1 py-0.5 rounded border border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700">
                                                 📎 File Required
                                             </span>
                                         )}
+                                        {(() => {
+                                            const meta = optimisticItem.metadata as unknown as ProtocolItemMetadata;
+                                            const rowColor = meta?.completionEffect?.rowColor;
+                                            if (!rowColor) return null;
+
+                                            // Map legacy class to hex for display
+                                            let displayColor = rowColor;
+                                            if (rowColor.includes('red')) displayColor = '#fee2e2';
+                                            else if (rowColor.includes('amber')) displayColor = '#fef3c7';
+                                            else if (rowColor.includes('emerald')) displayColor = '#d1fae5';
+
+                                            return (
+                                                <span className="text-[9px] font-bold text-slate-500 bg-slate-50 px-1 py-0.5 rounded border border-slate-100 flex items-center gap-1 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700" title="Completion Row Effect">
+                                                    <span className="w-2 h-2 rounded-full border border-black/10" style={{ backgroundColor: displayColor }}></span>
+                                                    Effect On
+                                                </span>
+                                            );
+                                        })()}
                                     </div>
                                 </div>
                             </div>

@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { format } from 'date-fns';
 import { type Dictionary } from '@/i18n/dictionaries';
-import { Trash2, Loader2, Download } from 'lucide-react';
+import { Trash2, Loader2, Download, Paperclip } from 'lucide-react';
 import { deleteProject, getProjectsMatrix } from '@/actions/project';
 import { toast } from 'sonner';
 import { useState, useTransition, useEffect } from 'react';
@@ -29,6 +29,8 @@ export interface ProjectTableProps {
             updatedAt: Date;
             originProtocolItemId: string | null;
             metadata: unknown;
+            requireAttachment: boolean;
+            files: unknown[];
         }[];
     }[];
     headers: {
@@ -72,18 +74,23 @@ export function ProjectTable({ projects: initialProjects, headers, dict, nextCur
 
         // 2. Check for completion effects
         if (done.length > 0) {
-            const lastDone = [...done].sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())[0];
-            const meta = lastDone.metadata as unknown as ProjectItemMetadata;
-            const rowColor = meta?.completionEffect?.rowColor;
+            // Sort by latest first
+            const sortedDone = [...done].sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
 
-            if (rowColor) {
-                // Handle Legacy Classes -> Hex Map
-                if (rowColor.includes('red-50') || rowColor.includes('red-100')) return { color: '#fee2e2', label: lastDone.title };
-                if (rowColor.includes('amber-50') || rowColor.includes('amber-100')) return { color: '#fef3c7', label: lastDone.title };
-                if (rowColor.includes('emerald-50') || rowColor.includes('emerald-100')) return { color: '#d1fae5', label: lastDone.title };
+            // Find the most recent item that has a row effect
+            for (const item of sortedDone) {
+                const meta = item.metadata as unknown as ProjectItemMetadata;
+                const rowColor = meta?.completionEffect?.rowColor;
 
-                // Assume Hex
-                return { color: rowColor, label: lastDone.title };
+                if (rowColor) {
+                    // Handle Legacy Classes -> Hex Map
+                    if (rowColor.includes('red-50') || rowColor.includes('red-100')) return { color: '#fee2e2', label: item.title };
+                    if (rowColor.includes('amber-50') || rowColor.includes('amber-100')) return { color: '#fef3c7', label: item.title };
+                    if (rowColor.includes('emerald-50') || rowColor.includes('emerald-100')) return { color: '#d1fae5', label: item.title };
+
+                    // Assume Hex
+                    return { color: rowColor, label: item.title };
+                }
             }
         }
         return null;
@@ -273,96 +280,105 @@ export function ProjectTable({ projects: initialProjects, headers, dict, nextCur
     return (
         <div className="space-y-4">
             {/* Filter Bar */}
-            <div className="flex flex-col sm:flex-row gap-3 justify-between items-center bg-white dark:bg-slate-900 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm">
+            <div className="flex flex-col sm:flex-row gap-3 items-center bg-white dark:bg-slate-900 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
 
-                {/* Search Input */}
-                <div className="relative w-full sm:w-64">
-                    <div className="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
-                        <svg className="h-3.5 w-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                        </svg>
-                    </div>
-                    <input
-                        placeholder={dict.project.searchPlaceholder}
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="block w-full pl-8 pr-3 py-1.5 border border-slate-200 rounded-md leading-5 bg-slate-50 text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white dark:focus:bg-slate-800 focus:ring-1 focus:ring-[#cd1717] focus:border-[#cd1717] text-xs sm:text-sm transition-colors dark:bg-slate-800 dark:border-slate-700 dark:text-slate-100"
-                    />
-                </div>
-
-                <div className="flex items-center gap-2 w-full sm:w-auto">
-                    {/* Protocol Filter */}
-                    <div className="relative w-full sm:w-auto">
-                        <select
-                            value={protocolFilter}
-                            onChange={(e) => setProtocolFilter(e.target.value)}
-                            className="block w-full sm:w-auto pl-3 pr-8 py-1.5 text-xs sm:text-sm text-slate-900 border-slate-200 focus:outline-none focus:ring-[#cd1717] focus:border-[#cd1717] rounded-md bg-slate-50 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-100 dark:focus:bg-slate-800 max-w-[180px] truncate"
-                        >
-                            <option value="ALL">{dict.project.allProtocols}</option>
-                            {protocols?.map(p => (
-                                <option key={p.id} value={p.id}>{p.name}</option>
-                            ))}
-                        </select>
+                {/* Left Group: Search & Dropdowns */}
+                <div className="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto shrink-0">
+                    {/* Search Input */}
+                    <div className="relative w-full sm:w-56">
+                        <div className="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
+                            <svg className="h-3.5 w-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                        </div>
+                        <input
+                            placeholder={dict.project.searchPlaceholder}
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="block w-full pl-8 pr-3 py-1.5 border border-slate-200 rounded-md leading-5 bg-slate-50 text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white dark:focus:bg-slate-800 focus:ring-1 focus:ring-[#cd1717] focus:border-[#cd1717] text-xs sm:text-sm transition-colors dark:bg-slate-800 dark:border-slate-700 dark:text-slate-100"
+                        />
                     </div>
 
-                    {/* Status Filter */}
-                    <div className="relative w-full sm:w-auto">
-                        <select
-                            value={statusFilter}
-                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                            onChange={(e) => setStatusFilter(e.target.value as any)}
-                            className="block w-full sm:w-auto pl-3 pr-8 py-1.5 text-xs sm:text-sm text-slate-900 border-slate-200 focus:outline-none focus:ring-[#cd1717] focus:border-[#cd1717] rounded-md bg-slate-50 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-100 dark:focus:bg-slate-800"
-                        >
-                            <option value="ALL">{dict.project.allStatus}</option>
-                            <option value="ACTIVE">{dict.project.status.ACTIVE}</option>
-                            <option value="COMPLETED">{dict.project.status.COMPLETED}</option>
-                        </select>
-                    </div>
-                </div>
-
-                {/* Color Legend / Filter */}
-                <div className="flex items-center gap-1.5 border-l border-slate-200 pl-3 ml-1 dark:border-slate-700 overflow-x-auto max-w-[50vw] sm:max-w-none no-scrollbar">
-                    {(() => {
-                        // Dynamically generate legend from Visible Projects
-                        const uniqueEffects = new Map<string, string>(); // color -> label
-                        projects.forEach(p => {
-                            const info = getProjectColor(p);
-                            if (info && info.color && !uniqueEffects.has(info.color)) {
-                                uniqueEffects.set(info.color, info.label);
-                            }
-                        });
-
-                        return Array.from(uniqueEffects.entries()).map(([color, label]) => (
-                            <button
-                                key={color}
-                                onClick={() => setColorFilter(prev => prev === color ? null : color)}
-                                className={`h-6 px-2 rounded-full flex items-center gap-1.5 transition-all text-[10px] font-medium border whitespace-nowrap ${colorFilter === color
-                                    ? `ring-2 ring-offset-1 ring-slate-400 border-transparent shadow-sm`
-                                    : 'border-slate-200 hover:scale-105 dark:border-slate-700 bg-white dark:bg-slate-800'
-                                    }`}
-                                title={`Filter: ${label}`}
-                                style={colorFilter === color ? { backgroundColor: color, color: '#000' } : {}}
+                    {/* Filters Group */}
+                    <div className="flex items-center gap-2 w-full sm:w-auto">
+                        <div className="relative w-full sm:w-auto">
+                            <select
+                                value={protocolFilter}
+                                onChange={(e) => setProtocolFilter(e.target.value)}
+                                className="block w-full sm:w-auto pl-3 pr-8 py-1.5 text-xs sm:text-sm text-slate-900 border-slate-200 focus:outline-none focus:ring-[#cd1717] focus:border-[#cd1717] rounded-md bg-slate-50 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-100 dark:focus:bg-slate-800 max-w-[150px] truncate"
                             >
-                                <div className="w-2.5 h-2.5 rounded-full border border-black/10 shadow-sm" style={{ backgroundColor: color }} />
-                                <span className={colorFilter === color ? 'font-bold' : 'text-slate-600 dark:text-slate-300'}>{label}</span>
-                            </button>
-                        ));
-                    })()}
+                                <option value="ALL">{dict.project.allProtocols}</option>
+                                {protocols?.map(p => (
+                                    <option key={p.id} value={p.id}>{p.name}</option>
+                                ))}
+                            </select>
+                        </div>
 
-                    {colorFilter && (
-                        <button
-                            onClick={() => setColorFilter(null)}
-                            className="text-xs text-slate-400 hover:text-slate-600 px-1 dark:text-slate-500 dark:hover:text-slate-300 whitespace-nowrap"
-                        >
-                            Clear
-                        </button>
-                    )}
+                        <div className="relative w-full sm:w-auto">
+                            <select
+                                value={statusFilter}
+                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                onChange={(e) => setStatusFilter(e.target.value as any)}
+                                className="block w-full sm:w-auto pl-3 pr-8 py-1.5 text-xs sm:text-sm text-slate-900 border-slate-200 focus:outline-none focus:ring-[#cd1717] focus:border-[#cd1717] rounded-md bg-slate-50 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-100 dark:focus:bg-slate-800"
+                            >
+                                <option value="ALL">{dict.project.allStatus}</option>
+                                <option value="ACTIVE">{dict.project.status.ACTIVE}</option>
+                                <option value="COMPLETED">{dict.project.status.COMPLETED}</option>
+                            </select>
+                        </div>
+                    </div>
                 </div>
-                {/* End of Color Legend */}
 
+                {/* Middle Group: Color Legend (Scrollable) */}
+                <div className="flex-1 w-full sm:w-auto min-w-0 border-l border-slate-200 pl-3 ml-1 dark:border-slate-700">
+                    <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar mask-gradient-right py-1">
+                        {(() => {
+                            // Dynamically generate legend from Visible Projects
+                            const uniqueEffects = new Map<string, string>(); // color -> label
+                            projects.forEach(p => {
+                                const info = getProjectColor(p);
+                                if (info && info.color && !uniqueEffects.has(info.color)) {
+                                    uniqueEffects.set(info.color, info.label);
+                                }
+                            });
+
+                            if (uniqueEffects.size === 0) return <span className="text-xs text-slate-400 italic px-2">No active filters</span>;
+
+                            return (
+                                <>
+                                    {Array.from(uniqueEffects.entries()).map(([color, label]) => (
+                                        <button
+                                            key={color}
+                                            onClick={() => setColorFilter(prev => prev === color ? null : color)}
+                                            className={`h-6 px-2.5 rounded-full flex items-center gap-1.5 transition-all text-[10px] font-medium border whitespace-nowrap shrink-0 ${colorFilter === color
+                                                ? `ring-2 ring-offset-1 ring-slate-400 border-transparent shadow-sm`
+                                                : 'border-slate-200 hover:scale-105 dark:border-slate-700 bg-white dark:bg-slate-800'
+                                                }`}
+                                            title={`Filter: ${label}`}
+                                            style={colorFilter === color ? { backgroundColor: color, color: '#000' } : {}}
+                                        >
+                                            <div className="w-2.5 h-2.5 rounded-full border border-black/10 shadow-sm" style={{ backgroundColor: color }} />
+                                            <span className={colorFilter === color ? 'font-bold' : 'text-slate-600 dark:text-slate-300'}>{label}</span>
+                                        </button>
+                                    ))}
+                                    {colorFilter && (
+                                        <button
+                                            onClick={() => setColorFilter(null)}
+                                            className="text-xs text-slate-400 hover:text-slate-600 px-1 dark:text-slate-500 dark:hover:text-slate-300 whitespace-nowrap sticky right-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm"
+                                        >
+                                            Clear
+                                        </button>
+                                    )}
+                                </>
+                            );
+                        })()}
+                    </div>
+                </div>
+
+                {/* Right Group: Export */}
                 <button
                     onClick={handleExport}
-                    className="flex items-center gap-2 px-3 py-1.5 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors shadow-sm text-xs sm:text-sm font-medium focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1 dark:focus:ring-offset-slate-900"
+                    className="flex shrink-0 items-center gap-2 px-3 py-1.5 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors shadow-sm text-xs sm:text-sm font-medium focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1 dark:focus:ring-offset-slate-900"
                     title="Export to Excel"
                 >
                     <Download size={16} />
@@ -475,8 +491,8 @@ export function ProjectTable({ projects: initialProjects, headers, dict, nextCur
                                             );
 
                                             if (!item) {
-                                                return <td key={header.id} className="px-4 py-2 text-center border-l border-slate-100 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-900/50">
-                                                    <span className="text-slate-300 text-xs dark:text-slate-700">-</span>
+                                                return <td key={header.id} className="px-4 py-2 text-center border-l border-slate-100 dark:border-slate-800 bg-slate-200 dark:bg-black/40">
+                                                    <span className="text-slate-400 text-xs dark:text-slate-600">-</span>
                                                 </td>;
                                             }
 
@@ -490,9 +506,17 @@ export function ProjectTable({ projects: initialProjects, headers, dict, nextCur
                                                             <span className={`text-xs font-bold ${isDone ? 'text-emerald-700 dark:text-emerald-400' : 'text-slate-500 dark:text-slate-400'}`}>
                                                                 {isSkipped ? '⏭ SKIPPED' : format(new Date(item.updatedAt), 'dd/MM/yyyy')}
                                                             </span>
-                                                            <span className={`text-[10px] ${isDone ? 'text-emerald-600/70 dark:text-emerald-500/70' : 'text-slate-400/70 dark:text-slate-500/70'}`}>
-                                                                {format(new Date(item.updatedAt), 'HH:mm')}
-                                                            </span>
+                                                            <div className="flex items-center gap-2">
+                                                                <span className={`text-[10px] ${isDone ? 'text-emerald-600/70 dark:text-emerald-500/70' : 'text-slate-400/70 dark:text-slate-500/70'}`}>
+                                                                    {format(new Date(item.updatedAt), 'HH:mm')}
+                                                                </span>
+                                                                {item.files?.length > 0 && (
+                                                                    <div className="flex items-center gap-0.5 text-[10px] text-slate-400 dark:text-slate-500" title="Attachments">
+                                                                        <Paperclip size={10} />
+                                                                        <span>{item.files.length}</span>
+                                                                    </div>
+                                                                )}
+                                                            </div>
                                                         </div>
                                                     ) : (
                                                         <div className="flex items-center gap-1.5 opacity-50">
