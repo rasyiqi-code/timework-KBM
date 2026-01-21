@@ -335,7 +335,7 @@ export function ProjectItemCard({ item, users, currentUser, dict, projectOwnerId
                                     <div className="space-y-1">
                                         {item.files?.map(file => (
                                             <div key={file.id} className="group/file flex items-center justify-between p-2 rounded bg-slate-50 border border-slate-200 hover:border-red-300 transition-colors dark:bg-slate-900 dark:border-slate-800 dark:hover:border-red-700">
-                                                <a href={file.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 min-w-0 flex-1 hover:underline">
+                                                <a href={`/api/file/${file.id}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 min-w-0 flex-1 hover:underline">
                                                     <Paperclip className="w-3.5 h-3.5 text-slate-400" />
                                                     <span className="text-xs text-slate-600 dark:text-slate-300 truncate font-medium">{file.name}</span>
                                                 </a>

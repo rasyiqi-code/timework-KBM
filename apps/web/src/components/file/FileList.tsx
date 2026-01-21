@@ -64,7 +64,7 @@ export function FileList({ files, currentUser }: FileListProps) {
                             </div>
                             <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
                                 <a
-                                    href={file.url}
+                                    href={`/api/file/${file.id}`}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="p-1.5 bg-white dark:bg-slate-800 text-slate-500 hover:text-indigo-600 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm"

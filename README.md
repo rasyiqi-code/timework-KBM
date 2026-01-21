@@ -2,19 +2,38 @@
 
 **Protocol-Driven Project Management**
 
-Timework is a monorepo application designed to manage projects through defined protocols (SOPs).
+Timework is a monorepo application designed to manage projects through defined protocols (SOPs). It enforces standardized workflows while providing flexibility where needed.
 
 ## Tech Stack
 -   **Framework**: Next.js 16 (App Router)
 -   **Language**: TypeScript
 -   **Database**: PostgreSQL + Prisma
--   **Styling**: Tailwind CSS
+-   **Styling**: Tailwind CSS, Shadcn UI
+-   **Charts**: Recharts
 -   **Workspace**: Turborepo
+
+## Key Features
+
+### 📊 Insight Dashboard
+Real-time analytics to monitor organization performance:
+-   **Project Status Distribution**: Pie charts showing Active vs Completed projects.
+-   **Protocol Usage**: Bar charts identifying most popular SOPs.
+-   **Team Performance**: Track average task duration by assignee to identify bottlenecks and efficiency.
+
+### 📜 Protocol Management
+Define strict Standard Operating Procedures (SOPs):
+-   **Templating**: Create reusable project structures with Tasks, Notes, and Groups.
+-   **Dependencies**: Enforce task order (e.g., Task B cannot start until Task A is done).
+-   **Conditional Logic**: Configure "Allow Skip" permissions per item to handle edge cases.
+
+### 🚀 Project Execution
+-   **Status Tracking**: Granular states (LOCKED, OPEN, IN_PROGRESS, DONE).
+-   **Role-Based Access**: Secure permissions for Admins, Managers, and Staff.
+-   **File Management**: Required file uploads for specific tasks.
 
 ## Getting Started
 
 ### Prerequisites
-
 -   Node.js 18+
 -   pnpm (`npm i -g pnpm`)
 -   PostgreSQL Database
@@ -27,13 +46,11 @@ Timework is a monorepo application designed to manage projects through defined p
     ```
 
 2.  **Setup Environment**:
-    Copy `.env.example` to `.env` (if available) or ensure valid `DATABASE_URL`.
+    Copy `.env.example` to `.env` and set your `DATABASE_URL`.
 
 3.  **Database Setup**:
     ```bash
     pnpm db:push
-    # or
-    cd packages/database && npx prisma db push
     ```
 
 4.  **Run Development Server**:
@@ -42,13 +59,12 @@ Timework is a monorepo application designed to manage projects through defined p
     ```
 
 ## Project Structure
-
 -   `apps/web`: The main Next.js web application.
 -   `packages/database`: Shared Prisma database schema and client.
+-   `packages/project-service`: Core business logic and validations.
 -   `packages/config`: Shared configurations (eslint, typescript).
 
 ## Script Commands
-
 -   `pnpm dev`: Start all apps in watch mode.
 -   `pnpm build`: Build all apps and packages.
 -   `pnpm lint`: Lint all codebases.
