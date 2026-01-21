@@ -61,8 +61,8 @@ export default function NotesPage() {
                     </h1>
                     <p className="text-slate-500 dark:text-slate-400 mt-1">
                         {selectedProject
-                            ? `Viewing notes for ${activeGroup?.title}`
-                            : 'Select a project to view its notes'}
+                            ? `Viewing items for ${activeGroup?.title}`
+                            : 'Select a project to view its notes and task descriptions'}
                     </p>
                 </div>
 
@@ -105,7 +105,7 @@ export default function NotesPage() {
                             <thead className="text-xs text-slate-500 uppercase bg-slate-50 border-b border-slate-200 dark:bg-slate-800/50 dark:border-slate-700 dark:text-slate-400">
                                 <tr>
                                     <th className="px-6 py-4 font-bold">Project Name</th>
-                                    <th className="px-6 py-4 font-bold text-center">Total Notes</th>
+                                    <th className="px-6 py-4 font-bold text-center">Notes / Tasks</th>
                                     <th className="px-6 py-4 font-bold">Status</th>
                                     <th className="px-6 py-4 font-bold text-right">Action</th>
                                 </tr>
@@ -198,7 +198,7 @@ export default function NotesPage() {
                                 <div className="mt-4 pt-4 border-t border-black/5 flex justify-between items-end text-xs opacity-70">
                                     <span>{new Date(note.updatedAt).toLocaleDateString()}</span>
                                     <span className="font-semibold uppercase tracking-wider text-[10px]">
-                                        Note
+                                        {note.type === 'NOTE' ? 'Note' : 'Task'}
                                     </span>
                                 </div>
                             </div>

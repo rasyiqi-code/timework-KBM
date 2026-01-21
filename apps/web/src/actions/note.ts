@@ -32,8 +32,13 @@ export async function getAllNotes(): Promise<NoteItem[]> {
                 organizationId: user.organizationId,
                 deletedAt: null // Only active projects
             },
-            type: 'NOTE',
-            description: { not: null }
+            OR: [
+                { type: 'NOTE' },
+                {
+                    type: 'TASK',
+                    description: { not: null }
+                }
+            ],
         },
         select: {
             id: true,
