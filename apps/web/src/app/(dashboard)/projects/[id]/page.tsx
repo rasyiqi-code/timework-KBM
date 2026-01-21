@@ -33,7 +33,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
                         <ProjectBoard project={project} users={users} currentUser={currentUser} dict={dict} />
                     </div>
 
-                    <div className="mt-12 opacity-90 transition-opacity max-w-2xl mx-auto md:pl-14">
+                    <div className="mt-12 opacity-90 transition-opacity w-full md:pl-14">
                         <div className="flex items-center gap-3 mb-4 ml-0">
                             <div className="h-px bg-slate-200 flex-1 dark:bg-slate-800"></div>
                             <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest dark:text-slate-500">{dict.project.detail.activityLog}</h3>

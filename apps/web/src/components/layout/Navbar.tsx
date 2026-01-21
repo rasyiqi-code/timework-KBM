@@ -62,6 +62,12 @@ export function Navbar({ dict, locale, signInUrl, currentUser }: {
                     <Link href="/insight" className="px-3 py-1.5 rounded hover:bg-slate-100 hover:text-slate-900 transition-all dark:hover:bg-slate-800 dark:hover:text-slate-100">
                         {dict.nav.insight}
                     </Link>
+                    <Link href="/files" className="px-3 py-1.5 rounded hover:bg-slate-100 hover:text-slate-900 transition-all dark:hover:bg-slate-800 dark:hover:text-slate-100">
+                        {dict.nav.fileManager}
+                    </Link>
+                    <Link href="/notes" className="px-3 py-1.5 rounded hover:bg-slate-100 hover:text-slate-900 transition-all dark:hover:bg-slate-800 dark:hover:text-slate-100">
+                        Notes
+                    </Link>
                     {(currentUser?.role === 'ADMIN' || currentUser?.role === 'SUPER_ADMIN') && (
                         <Link href="/admin/protocols" className="px-3 py-1.5 rounded hover:bg-slate-100 hover:text-slate-900 transition-all dark:hover:bg-slate-800 dark:hover:text-slate-100">
                             {dict.nav.protocols}

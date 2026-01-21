@@ -27,7 +27,7 @@ function getFileKeyFromUrl(attachmentUrl: string): string | null {
     }
 }
 
-export async function getPresignedUploadUrl(taskId: string, fileName: string, fileType: string) {
+export async function getPresignedUploadUrl(taskId: string, fileName: string, fileType: string, projectId?: string) {
     if (!process.env.R2_ACCOUNT_ID) {
         console.error("CRITICAL: R2_ACCOUNT_ID is missing from environment variables!");
         return { error: "Server Misconfiguration: R2_ACCOUNT_ID is missing" };
@@ -35,9 +35,18 @@ export async function getPresignedUploadUrl(taskId: string, fileName: string, fi
     const user = await getCurrentUser();
     if (!user) return { error: 'Unauthorized' };
 
-    // Create a clean file key: tasks/{taskId}/{timestamp}-{sanitized_filename}
+    // Create a clean file key
     const sanitizedFileName = fileName.replace(/[^a-zA-Z0-9.-]/g, '_');
-    const fileKey = `tasks/${taskId}/${Date.now()}-${sanitizedFileName}`;
+
+    // If projectId is provided, store in projects/{projectId}/...
+    // Otherwise fall back to tasks/{taskId}/... (Legacy/Task-specific)
+    let fileKey = '';
+
+    if (projectId) {
+        fileKey = `projects/${projectId}/${Date.now()}-${sanitizedFileName}`;
+    } else {
+        fileKey = `tasks/${taskId}/${Date.now()}-${sanitizedFileName}`;
+    }
 
     const command = new PutObjectCommand({
         Bucket: R2_BUCKET_NAME,
@@ -50,8 +59,6 @@ export async function getPresignedUploadUrl(taskId: string, fileName: string, fi
 
     const uploadUrl = await getSignedUrl(s3Client, command, { expiresIn: 300 }); // 5 minutes
 
-    // Construct the public URL (kept for DB consistency, but we will prefer using Keys/Signed URLs for access)
-    // We prefer storing the full URL for now to avoid breaking schema assumptions, but we'll parse it back.
     const publicUrl = process.env.R2_PUBLIC_URL
         ? `${process.env.R2_PUBLIC_URL}/${fileKey}`
         : `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com/${R2_BUCKET_NAME}/${fileKey}`;

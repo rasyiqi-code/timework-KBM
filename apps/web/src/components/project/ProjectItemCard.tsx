@@ -294,7 +294,7 @@ export function ProjectItemCard({ item, users, currentUser, dict, projectOwnerId
                                 ) : (
                                     <>
                                         <div className={`${isDetailsExpanded ? 'mb-1 whitespace-pre-wrap' : 'truncate'}`}>
-                                            {item.description || <span className="italic opacity-50">{dict.project.detail.noDetails}</span>}
+                                            {item.description}
                                         </div>
                                         {item.dependsOn && item.dependsOn.length > 0 && (
                                             <div className={`

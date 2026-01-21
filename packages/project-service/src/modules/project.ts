@@ -6,7 +6,10 @@ export async function getProjects(prisma: PrismaClient, ctx: ProjectContext): Pr
     if (!ctx.organizationId) return [];
 
     return await prisma.project.findMany({
-        where: { organizationId: ctx.organizationId },
+        where: {
+            organizationId: ctx.organizationId,
+            deletedAt: null
+        },
         orderBy: { updatedAt: 'desc' },
         include: {
             _count: { select: { items: true } }
@@ -29,7 +32,10 @@ export async function getProjectsMatrix(
     const take = limit + 1; // Fetch one extra to determine if there's a next page
 
     const projects = await prisma.project.findMany({
-        where: { organizationId: ctx.organizationId },
+        where: {
+            organizationId: ctx.organizationId,
+            deletedAt: null
+        },
         orderBy: { updatedAt: 'desc' },
         take,
         skip: cursor ? 1 : 0,
@@ -264,6 +270,24 @@ export async function deleteProject(prisma: PrismaClient, ctx: ProjectContext, p
     });
 
     if (!project) throw new Error('Project not found');
+    if (project.organizationId !== ctx.organizationId) throw new Error('Unauthorized');
+
+    await prisma.project.update({
+        where: { id: projectId },
+        data: { deletedAt: new Date() }
+    });
+}
+
+export async function hardDeleteProject(prisma: PrismaClient, ctx: ProjectContext, projectId: string): Promise<void> {
+    const isAdmin = ctx.role === 'ADMIN' || ctx.role === 'SUPER_ADMIN';
+    if (!isAdmin) throw new Error('Unauthorized: Admin access required');
+
+    const project = await prisma.project.findUnique({
+        where: { id: projectId },
+        select: { organizationId: true }
+    });
+
+    if (!project) return;
     if (project.organizationId !== ctx.organizationId) throw new Error('Unauthorized');
 
     await prisma.project.delete({

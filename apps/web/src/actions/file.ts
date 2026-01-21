@@ -127,3 +127,71 @@ export async function deleteFile(fileId: string) {
     await prisma.file.delete({ where: { id: fileId } });
     revalidatePath(`/projects/${file.projectId}`);
 }
+
+export async function permanentDeleteProject(projectId: string) {
+    const user = await getCurrentUser();
+    if (!user || user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN') {
+        throw new Error('Unauthorized: Only Admin can delete projects permanently');
+    }
+
+    // 1. Fetch all files for this project
+    const allFiles = await prisma.file.findMany({
+        where: { projectId },
+        select: { url: true, id: true }
+    });
+
+    // 2. Delete from R2
+    // We do this concurrently
+    await Promise.all(allFiles.map(async (f) => {
+        const fileKey = getFileKeyFromUrl(f.url);
+        if (fileKey) {
+            try {
+                await s3Client.send(new DeleteObjectCommand({
+                    Bucket: R2_BUCKET_NAME,
+                    Key: fileKey
+                }));
+            } catch (err) {
+                console.error(`Failed to delete file ${fileKey} from R2`, err);
+            }
+        }
+    }));
+
+    // 3. Hard Delete from DB using service
+    const { ProjectService } = await import('@repo/project-service');
+    const projectService = new ProjectService(prisma);
+
+    const ctx = { userId: user.id, organizationId: user.organizationId || '', role: user.role };
+    await projectService.hardDelete(ctx, projectId);
+
+    revalidatePath('/files');
+    revalidatePath('/projects');
+}
+
+export async function getAllFilesGroupedByProject() {
+    const user = await getCurrentUser();
+    if (!user || !user.organizationId) return [];
+
+    const projects = await prisma.project.findMany({
+        where: {
+            organizationId: user.organizationId,
+            // We want ALL projects, even deleted ones
+            files: { some: {} } // Only get projects that actually have files
+        },
+        select: {
+            id: true,
+            title: true,
+            status: true,
+            deletedAt: true,
+            files: {
+                orderBy: { createdAt: 'desc' },
+                include: {
+                    uploadedBy: { select: { name: true } },
+                    task: { select: { title: true } }
+                }
+            }
+        },
+        orderBy: { updatedAt: 'desc' }
+    });
+
+    return projects;
+}

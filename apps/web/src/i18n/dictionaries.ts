@@ -27,6 +27,7 @@ export const dictionaries = {
             getStarted: 'Lihat Alur Naskah',
             projectForm: 'Formulir Alur Naskah',
             insight: 'Insight',
+            fileManager: 'File Manager',
         },
         protocol: {
             titlePlaceholder: 'Ketik judul tugas baru...',
@@ -95,6 +96,7 @@ export const dictionaries = {
                 clickToCollapse: 'Klik untuk menutup',
                 descriptionPlaceholder: 'Deskripsi...',
                 skipped: 'Dilewati',
+                refresh: 'Refresh',
             },
             searchPlaceholder: 'Cari Alur Naskah...',
             allProtocols: 'Semua SOP',
@@ -258,6 +260,7 @@ export const dictionaries = {
             getStarted: 'Get Started',
             projectForm: 'Project Form',
             insight: 'Insight',
+            fileManager: 'File Manager',
         },
         protocol: {
             titlePlaceholder: 'Type new task title...',
@@ -340,6 +343,7 @@ export const dictionaries = {
                 clickToCollapse: 'Click to collapse',
                 descriptionPlaceholder: 'Description...',
                 skipped: 'Skipped',
+                refresh: 'Refresh',
             },
             searchPlaceholder: 'Search projects...',
             allProtocols: 'All Protocols',

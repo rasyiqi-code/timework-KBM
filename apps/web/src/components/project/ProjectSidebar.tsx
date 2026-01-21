@@ -1,13 +1,13 @@
 'use client';
 
-import { toast } from 'sonner';
+
 
 import Link from 'next/link';
 import { type Project, type User, type ProjectItem } from '@repo/database';
 import { useState, useTransition, useOptimistic } from 'react';
 import { useRouter } from 'next/navigation';
 import { updateProjectDetails } from '@/actions/project';
-import { getPresignedDownloadUrl } from '@/actions/storage';
+
 import { type Dictionary } from '@/i18n/dictionaries';
 import { type FormField } from '@/types/form';
 
@@ -115,22 +115,39 @@ export function ProjectSidebar({ project, users, currentUser, dict, fields }: Pr
                                 rows={3}
                                 className="w-full text-xs bg-slate-50 border border-indigo-300 rounded px-2 py-1 text-slate-600 focus:ring-2 focus:ring-indigo-500 outline-none dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300"
                             />
-                            <div className="flex justify-end gap-2">
+                            <div className="flex justify-between items-center pt-2 mt-2 border-t border-slate-100 dark:border-slate-800">
                                 <button
                                     type="button"
-                                    onClick={() => setIsEditMode(false)}
-                                    disabled={isPending}
-                                    className="text-[10px] font-bold text-slate-500 hover:text-slate-700 dark:text-slate-400"
+                                    onClick={async () => {
+                                        if (confirm(dict.project.deleteConfirm || 'Are you sure you want to delete this project?')) {
+                                            startTransition(async () => {
+                                                const { deleteProject } = await import('@/actions/project');
+                                                await deleteProject(project.id);
+                                                router.push('/projects');
+                                            });
+                                        }
+                                    }}
+                                    className="text-[10px] font-bold text-red-500 hover:text-red-700 dark:text-red-400"
                                 >
-                                    Cancel
+                                    {dict.common.delete || 'Delete'}
                                 </button>
-                                <button
-                                    type="submit"
-                                    disabled={isPending}
-                                    className="text-[10px] font-bold bg-indigo-600 text-white px-2 py-1 rounded hover:bg-indigo-700"
-                                >
-                                    {isPending ? 'Saving...' : 'Save'}
-                                </button>
+                                <div className="flex gap-2">
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsEditMode(false)}
+                                        disabled={isPending}
+                                        className="text-[10px] font-bold text-slate-500 hover:text-slate-700 dark:text-slate-400"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        disabled={isPending}
+                                        className="text-[10px] font-bold bg-indigo-600 text-white px-2 py-1 rounded hover:bg-indigo-700"
+                                    >
+                                        {isPending ? 'Saving...' : 'Save'}
+                                    </button>
+                                </div>
                             </div>
                         </form>
                     ) : (
@@ -184,11 +201,24 @@ export function ProjectSidebar({ project, users, currentUser, dict, fields }: Pr
                     <Link href="/projects" className="flex-1 py-1.5 text-center rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-600 font-bold text-xs transition-all border border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700 dark:hover:bg-slate-700">
                         ← {dict.project.detail.back}
                     </Link>
-                    {isAdmin && (
-                        <button className="flex-1 py-1.5 rounded-lg bg-indigo-600 text-white font-bold text-xs hover:bg-indigo-700 transition-all dark:bg-indigo-600 dark:hover:bg-indigo-500">
-                            {dict.project.detail.settings}
-                        </button>
-                    )}
+                    <button
+                        onClick={() => {
+                            startTransition(() => {
+                                router.refresh();
+                            });
+                        }}
+                        disabled={isPending}
+                        className="flex-1 py-1.5 rounded-lg bg-indigo-600 text-white font-bold text-xs hover:bg-indigo-700 transition-all dark:bg-indigo-600 dark:hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2"
+                    >
+                        {isPending ? (
+                            <svg className="animate-spin h-3.5 w-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                        ) : (
+                            dict.project.detail.refresh
+                        )}
+                    </button>
                 </div>
             </div>
 
@@ -220,50 +250,7 @@ export function ProjectSidebar({ project, users, currentUser, dict, fields }: Pr
                 <svg className="w-4 h-4 text-slate-400 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path></svg>
             </Link>
 
-            {/* File Manager Card */}
-            <div className="bg-white rounded-xl p-4 border border-slate-200 shadow-sm dark:bg-slate-900 dark:border-slate-800">
-                <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-3">File Manager</h3>
 
-                {project.items.filter(i => i.attachmentUrl).length === 0 ? (
-                    <p className="text-xs text-slate-400 italic">No files uploaded yet.</p>
-                ) : (
-                    <div className="space-y-2 max-h-60 overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-700">
-                        {project.items
-                            .filter(i => i.attachmentUrl)
-                            .map(item => (
-                                <button
-                                    key={item.id}
-                                    onClick={async () => {
-                                        const toastId = toast.loading('Opening file...');
-                                        try {
-                                            const url = await getPresignedDownloadUrl(item.id);
-                                            window.open(url, '_blank');
-                                            toast.dismiss(toastId);
-                                        } catch (error) {
-                                            toast.error('Failed to open file', { id: toastId });
-                                            console.error(error);
-                                        }
-                                    }}
-                                    className="flex items-start gap-2 p-2 rounded-lg bg-slate-50 border border-slate-100 hover:bg-indigo-50 hover:border-indigo-200 transition-all group w-full text-left cursor-pointer dark:bg-slate-800 dark:border-slate-700 dark:hover:bg-indigo-900/20 dark:hover:border-indigo-800"
-                                >
-                                    <div className="mt-0.5 min-w-[1rem] flex justify-center">
-                                        <svg className="w-4 h-4 text-indigo-500 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path></svg>
-                                    </div>
-                                    <div className="min-w-0">
-                                        <p className="text-xs font-semibold text-slate-700 truncate group-hover:text-indigo-600 dark:text-slate-300 dark:group-hover:text-indigo-400">
-                                            {item.title}
-                                        </p>
-                                        <p className="text-[9px] text-slate-400 group-hover:text-indigo-400/70 truncate">
-                                            {/* Extract filename from URL roughly */}
-                                            {item.attachmentUrl!.split('/').pop()?.split('?')[0] || 'Download File'}
-                                        </p>
-                                    </div>
-                                </button>
-                            ))
-                        }
-                    </div>
-                )}
-            </div>
         </aside>
     );
 }

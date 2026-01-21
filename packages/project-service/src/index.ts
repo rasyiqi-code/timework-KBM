@@ -43,6 +43,10 @@ export class ProjectService {
         return ProjectModule.deleteProject(this.prisma, ctx, projectId);
     }
 
+    async hardDelete(ctx: ProjectContext, projectId: string): Promise<void> {
+        return ProjectModule.hardDeleteProject(this.prisma, ctx, projectId);
+    }
+
     async getProjects(ctx: ProjectContext): Promise<(Project & { _count: { items: number } })[]> {
         return ProjectModule.getProjects(this.prisma, ctx);
     }
@@ -94,6 +98,8 @@ export class ProjectService {
         if (project && project.organizationId !== ctx.organizationId) {
             return null;
         }
+        if (project?.deletedAt) return null;
+
         return project;
     }
 

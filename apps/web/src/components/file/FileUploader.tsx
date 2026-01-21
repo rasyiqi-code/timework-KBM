@@ -54,7 +54,7 @@ export function FileUploader({ projectId, taskId, onUploadComplete, variant = 'd
                 // 1. Get Presigned URL
                 // Note: We use taskId 'general' if global upload, but better to use a random ID or project ID prefix
                 const contextId = taskId || projectId;
-                const { uploadUrl, publicUrl, error } = await getPresignedUploadUrl(contextId, file.name, file.type);
+                const { uploadUrl, publicUrl, error } = await getPresignedUploadUrl(contextId, file.name, file.type, projectId);
 
                 if (error || !uploadUrl) throw new Error(error || 'Failed to get upload URL');
 

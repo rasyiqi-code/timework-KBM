@@ -31,6 +31,11 @@ Define strict Standard Operating Procedures (SOPs):
 -   **Role-Based Access**: Secure permissions for Admins, Managers, and Staff.
 -   **File Management**: Required file uploads for specific tasks.
 
+### 📂 File Manager & Data Safety
+-   **File Explorer**: Integrated file manager with breadcrumb navigation and grid/list views.
+-   **Soft Delete**: Projects are marked as deleted initially (recoverable), preventing accidental data loss.
+-   **Permanent Delete**: Admin-only capability to permanently remove projects and their associated files from Cloudflare R2 storage.
+
 ## Getting Started
 
 ### Prerequisites
