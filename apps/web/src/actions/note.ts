@@ -26,6 +26,8 @@ export async function getAllNotes(): Promise<NoteItem[]> {
         return [];
     }
 
+    const isAdmin = user.role === 'ADMIN' || user.role === 'SUPER_ADMIN';
+
     const items = await prisma.projectItem.findMany({
         where: {
             project: {
@@ -39,6 +41,24 @@ export async function getAllNotes(): Promise<NoteItem[]> {
                     description: { not: null }
                 }
             ],
+            // Access Control - Use string literals for IDE compatibility
+            ...(isAdmin ? {} : ({
+                AND: [
+                    {
+                        OR: [
+                            { fileAccess: 'PUBLIC' },
+                            {
+                                fileAccess: 'RESTRICTED',
+                                OR: [
+                                    { assignedToId: user.id },
+                                    { assignees: { some: { id: user.id } } },
+                                    { allowedFileViewers: { some: { id: user.id } } }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            } as any))
         },
         select: {
             id: true,
@@ -62,7 +82,7 @@ export async function getAllNotes(): Promise<NoteItem[]> {
         orderBy: {
             updatedAt: 'desc'
         }
-    });
+    }) as unknown as NoteItem[];
 
     // Filter out tasks with empty descriptions if any slipped through (e.g. empty string)
     // Filter out items with empty descriptions

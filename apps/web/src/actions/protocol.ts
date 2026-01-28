@@ -158,6 +158,8 @@ export async function addProtocolItem(protocolId: string, formData: FormData) {
     description: formData.get('description'),
     parentId: formData.get('parentId'),
     requireAttachment: formData.get('requireAttachment') === 'true', // Handle checkbox value
+    fileAccess: formData.get('fileAccess') || 'PUBLIC',
+    allowedFileViewerIds: formData.getAll('allowedFileViewerIds').map(String).filter(Boolean),
     color: formData.get('color')
   };
 
@@ -182,11 +184,15 @@ export async function addProtocolItem(protocolId: string, formData: FormData) {
       description: validated.description,
       parentId: validated.parentId,
       requireAttachment: validated.requireAttachment,
+      fileAccess: validated.fileAccess,
       defaultAssignee: validated.defaultAssigneeId
         ? { connect: { id: validated.defaultAssigneeId } }
         : undefined,
       defaultAssignees: validated.defaultAssigneeIds && validated.defaultAssigneeIds.length > 0
         ? { connect: validated.defaultAssigneeIds.map(id => ({ id })) }
+        : undefined,
+      allowedFileViewers: validated.allowedFileViewerIds && validated.allowedFileViewerIds.length > 0
+        ? { connect: validated.allowedFileViewerIds.map(id => ({ id })) }
         : undefined,
       color: validated.color
     } as any // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -353,6 +359,8 @@ export async function updateProtocolItem(itemId: string, formData: FormData) {
     description: formData.get('description'),
     parentId: formData.get('parentId') || null,
     requireAttachment: formData.get('requireAttachment') === 'true',
+    fileAccess: formData.get('fileAccess') || 'PUBLIC',
+    allowedFileViewerIds: formData.getAll('allowedFileViewerIds').map(String).filter(Boolean),
     color: formData.get('color'),
     metadata: formData.get('metadata') ? JSON.parse(formData.get('metadata') as string) : undefined
   };
@@ -376,11 +384,15 @@ export async function updateProtocolItem(itemId: string, formData: FormData) {
       description: validated.description,
       type: validated.type,
       requireAttachment: validated.requireAttachment,
+      fileAccess: validated.fileAccess,
       defaultAssignee: validated.defaultAssigneeId
         ? { connect: { id: validated.defaultAssigneeId } }
         : { disconnect: true },
       defaultAssignees: validated.defaultAssigneeIds
         ? { set: validated.defaultAssigneeIds.map(id => ({ id })) }
+        : undefined,
+      allowedFileViewers: validated.allowedFileViewerIds
+        ? { set: validated.allowedFileViewerIds.map(id => ({ id })) }
         : undefined,
       color: validated.color,
       metadata: validated.metadata

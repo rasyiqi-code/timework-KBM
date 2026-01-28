@@ -10,11 +10,12 @@ import { Dictionary } from '@/i18n/dictionaries'; // Assuming Dictionary type is
 import { CheckSquare } from 'lucide-react';
 
 // Navbar now expects dict and locale as props, as it's a client component
-export function Navbar({ dict, locale, signInUrl, currentUser }: {
+export function Navbar({ dict, locale, signInUrl, currentUser, canSeeFileManager }: {
     dict: Dictionary,
     locale: string,
     signInUrl: string,
-    currentUser: any // eslint-disable-line @typescript-eslint/no-explicit-any
+    currentUser: any, // eslint-disable-line @typescript-eslint/no-explicit-any
+    canSeeFileManager?: boolean
 }) {
     const pathname = usePathname();
 
@@ -62,9 +63,11 @@ export function Navbar({ dict, locale, signInUrl, currentUser }: {
                     <Link href="/insight" className="px-3 py-1.5 rounded hover:bg-slate-100 hover:text-slate-900 transition-all dark:hover:bg-slate-800 dark:hover:text-slate-100">
                         {dict.nav.insight}
                     </Link>
-                    <Link href="/files" className="px-3 py-1.5 rounded hover:bg-slate-100 hover:text-slate-900 transition-all dark:hover:bg-slate-800 dark:hover:text-slate-100">
-                        {dict.nav.fileManager}
-                    </Link>
+                    {canSeeFileManager && (
+                        <Link href="/files" className="px-3 py-1.5 rounded hover:bg-slate-100 hover:text-slate-900 transition-all dark:hover:bg-slate-800 dark:hover:text-slate-100">
+                            {dict.nav.fileManager}
+                        </Link>
+                    )}
                     <Link href="/notes" className="px-3 py-1.5 rounded hover:bg-slate-100 hover:text-slate-900 transition-all dark:hover:bg-slate-800 dark:hover:text-slate-100">
                         Notes
                     </Link>

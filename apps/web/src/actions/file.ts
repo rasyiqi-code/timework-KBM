@@ -171,11 +171,36 @@ export async function getAllFilesGroupedByProject() {
     const user = await getCurrentUser();
     if (!user || !user.organizationId) return [];
 
+    const isAdmin = user.role === 'ADMIN' || user.role === 'SUPER_ADMIN';
+
+    // File Filtering Logic
+    const fileFilter = isAdmin ? {} : {
+        OR: [
+            // 1. Files from tasks with PUBLIC access
+            { task: { fileAccess: 'PUBLIC' as const } },
+            // 2. Files not tied to a specific task (Project-level files)
+            { task: null },
+            // 3. Files from RESTRICTED tasks where user is assigned
+            {
+                task: {
+                    fileAccess: 'RESTRICTED' as const,
+                    OR: [
+                        { assignedToId: user.id },
+                        { assignees: { some: { id: user.id } } },
+                        { allowedFileViewers: { some: { id: user.id } } }
+                    ]
+                }
+            },
+            // 4. Files uploaded by the user themselves
+            { uploadedById: user.id }
+        ]
+    };
+
     const projects = await prisma.project.findMany({
         where: {
             organizationId: user.organizationId,
-            // We want ALL projects, even deleted ones
-            files: { some: {} } // Only get projects that actually have files
+            // Only get projects that actually have files the user can see
+            files: { some: fileFilter }
         },
         select: {
             id: true,
@@ -183,15 +208,16 @@ export async function getAllFilesGroupedByProject() {
             status: true,
             deletedAt: true,
             files: {
+                where: fileFilter,
                 orderBy: { createdAt: 'desc' },
                 include: {
                     uploadedBy: { select: { name: true } },
-                    task: { select: { title: true } }
+                    task: { select: { title: true, fileAccess: true } as any }
                 }
             }
         },
         orderBy: { updatedAt: 'desc' }
     });
 
-    return projects;
+    return projects as any[];
 }

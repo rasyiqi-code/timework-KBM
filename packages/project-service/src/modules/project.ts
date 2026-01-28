@@ -95,16 +95,17 @@ export async function createFromProtocol(prisma: PrismaClient, ctx: ProjectConte
     if (!ctx.organizationId) throw new Error('No Organization selected');
 
     // 1. Fetch Protocol
-    const protocol = await prisma.protocol.findUnique({
+    const protocol: any = await prisma.protocol.findUnique({
         where: { id: protocolId },
         include: {
             items: {
                 include: {
                     dependsOn: true,
-                    defaultAssignees: { select: { id: true } }
+                    defaultAssignees: { select: { id: true } },
+                    allowedFileViewers: { select: { id: true } }
                 }
             }
-        }
+        } as any
     });
 
     if (!protocol) throw new Error('Protocol not found');
@@ -146,14 +147,18 @@ export async function createFromProtocol(prisma: PrismaClient, ctx: ProjectConte
                     originProtocolItemId: pItem.id,
                     assignedToId: pItem.defaultAssignees && pItem.defaultAssignees.length > 0 ? pItem.defaultAssignees[0].id : pItem.defaultAssigneeId, // Sync legacy
                     assignees: {
-                        connect: pItem.defaultAssignees.map(u => ({ id: u.id }))
+                        connect: pItem.defaultAssignees.map((u: any) => ({ id: u.id }))
+                    },
+                    allowedFileViewers: {
+                        connect: (pItem as any).allowedFileViewers?.map((u: any) => ({ id: u.id })) || []
                     },
                     type: pItem.type,
                     order: pItem.order,
                     requireAttachment: pItem.requireAttachment,
+                    fileAccess: (pItem as any).fileAccess,
                     color: pItem.color,
                     metadata: pItem.metadata ?? undefined
-                },
+                } as any,
                 select: { id: true }
             });
             itemIdMap.set(pItem.id, createdItem.id);

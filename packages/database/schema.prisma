@@ -17,6 +17,11 @@ enum ProtocolItemType {
   GROUP
 }
 
+enum FileAccess {
+  PUBLIC
+  RESTRICTED
+}
+
 // Organization (Tenant)
 model Organization {
   id        String   @id // Will match Stack Team ID
@@ -67,6 +72,8 @@ model User {
   
   // Access Control
   allowedProtocols Protocol[] @relation("ProtocolAllowedCreators")
+  allowedProtocolFileViewers ProtocolItem[] @relation("ProtocolItemAllowedViewers")
+  allowedProjectFileViewers  ProjectItem[]  @relation("ProjectItemAllowedViewers")
 
   uploadedFiles File[]
 }
@@ -155,6 +162,7 @@ model ProtocolItem {
   duration    Int      @default(1) // Default duration in days
   order       Int      @default(0)
   requireAttachment Boolean  @default(false)
+  fileAccess         FileAccess @default(PUBLIC)
   color       String?
   metadata    Json? // For storing row effects
   
@@ -166,6 +174,7 @@ model ProtocolItem {
 
   // Multi-assignee support
   defaultAssignees  User[]  @relation("ProtocolItemDefaultAssignees")
+  allowedFileViewers User[] @relation("ProtocolItemAllowedViewers")
 
   // Subtasks (Recursive)
   parentId    String?
@@ -207,11 +216,13 @@ model ProjectItem {
 
   // Multiple Assignees (New)
   assignees    User[]  @relation("ProjectItemAssignees")
+  allowedFileViewers User[] @relation("ProjectItemAllowedViewers")
 
   // Sync from Protocol
   type        ProtocolItemType @default(TASK)
   order       Int              @default(0)
   requireAttachment Boolean  @default(false)
+  fileAccess         FileAccess       @default(PUBLIC)
   color             String?
   attachmentUrl String? // DEPRECATED: Use files relation instead
   files             File[]

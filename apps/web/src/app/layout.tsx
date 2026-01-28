@@ -76,8 +76,35 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const dict = await getDictionary();
-  const locale = await getLocale();
   const currentUser = await getCurrentUser();
+  const locale = await getLocale();
+
+  // File Manager Visibility Logic
+  let canSeeFileManager = false;
+  if (currentUser) {
+    const isAdmin = currentUser.role === 'ADMIN' || currentUser.role === 'SUPER_ADMIN';
+    const isManager = currentUser.role === 'MANAGER';
+    if (isAdmin || isManager) {
+      canSeeFileManager = true;
+    } else if (currentUser.organizationId) {
+      const { prisma } = await import('@/lib/db');
+      const count = await prisma.projectItem.count({
+        where: {
+          project: {
+            organizationId: currentUser.organizationId,
+            deletedAt: null
+          },
+          requireAttachment: true,
+          OR: [
+            { assignedToId: currentUser.id },
+            { assignees: { some: { id: currentUser.id } } },
+            { allowedFileViewers: { some: { id: currentUser.id } } }
+          ] as any
+        }
+      });
+      canSeeFileManager = count > 0;
+    }
+  }
 
   return (
     <html lang="id" suppressHydrationWarning>
@@ -124,7 +151,13 @@ export default async function RootLayout({
               <TooltipProvider>
                 <OnboardingCheckWrapper />
                 <Suspense fallback={null}>
-                  <Navbar dict={dict} locale={locale} signInUrl={stackServerApp.urls.signIn} currentUser={currentUser} />
+                  <Navbar
+                    dict={dict}
+                    locale={locale}
+                    signInUrl={stackServerApp.urls.signIn}
+                    currentUser={currentUser}
+                    canSeeFileManager={canSeeFileManager}
+                  />
                 </Suspense>
                 <main className="min-h-screen">
                   {children}

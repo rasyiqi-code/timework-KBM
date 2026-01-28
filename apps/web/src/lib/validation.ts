@@ -16,6 +16,8 @@ export const ProtocolItemSchema = z.object({
     description: z.string().optional().nullable(),
     parentId: z.string().optional().nullable(),
     requireAttachment: z.boolean().optional().default(false),
+    fileAccess: z.enum(['PUBLIC', 'RESTRICTED']).optional().default('PUBLIC'),
+    allowedFileViewerIds: z.array(z.string()).optional(),
     color: z.string().optional().nullable(),
     metadata: z.any().optional(),
 });
