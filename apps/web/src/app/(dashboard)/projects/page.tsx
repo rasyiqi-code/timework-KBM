@@ -9,7 +9,7 @@ import { getDictionary } from '@/i18n/server';
 export const dynamic = 'force-dynamic';
 
 export default async function ProjectsPage() {
-    const { projects, headers, nextCursor } = await getProjectsMatrix();
+    const { projects, headers, nextCursor } = await getProjectsMatrix(12);
     const protocols = await getProtocols();
     const dict = await getDictionary();
 

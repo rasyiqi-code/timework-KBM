@@ -74,6 +74,7 @@ model User {
   allowedProtocols Protocol[] @relation("ProtocolAllowedCreators")
   allowedProtocolFileViewers ProtocolItem[] @relation("ProtocolItemAllowedViewers")
   allowedProjectFileViewers  ProjectItem[]  @relation("ProjectItemAllowedViewers")
+  completedItems             ProjectItem[]  @relation("ProjectItemCompleter")
 
   uploadedFiles File[]
 }
@@ -213,6 +214,10 @@ model ProjectItem {
 
   assignedToId String?
   assignedTo   User?   @relation(fields: [assignedToId], references: [id])
+
+  // Track who completed the task
+  completedById String?
+  completedBy   User?   @relation("ProjectItemCompleter", fields: [completedById], references: [id])
 
   // Multiple Assignees (New)
   assignees    User[]  @relation("ProjectItemAssignees")

@@ -70,12 +70,12 @@ export function ProtocolItemRow({ item, index, allItems, users }: ProtocolItemRo
         const meta = item.metadata as unknown as ProtocolItemMetadata;
         const stored = meta?.completionEffect?.rowColor || '';
         // Legacy Map
-        if (stored === 'bg-red-50') return '#fee2e2'; // red-100
-        if (stored === 'bg-red-100') return '#fee2e2';
-        if (stored === 'bg-amber-50') return '#fef3c7'; // amber-100
-        if (stored === 'bg-amber-100') return '#fef3c7';
-        if (stored === 'bg-emerald-50') return '#d1fae5'; // emerald-100
-        if (stored === 'bg-emerald-100') return '#d1fae5';
+        if (stored === 'bg-red-50') return '#890000'; // Deep Red
+        if (stored === 'bg-red-100') return '#890000';
+        if (stored === 'bg-amber-50') return '#b45309'; // Deep Amber
+        if (stored === 'bg-amber-100') return '#b45309';
+        if (stored === 'bg-emerald-50') return '#064e3b'; // Deep Emerald
+        if (stored === 'bg-emerald-100') return '#064e3b';
 
         return stored;
     });
@@ -163,10 +163,11 @@ export function ProtocolItemRow({ item, index, allItems, users }: ProtocolItemRo
         const meta = item.metadata as unknown as ProtocolItemMetadata;
         const storedParams = meta?.completionEffect?.rowColor || '';
         // Same legacy mapping for cancel revert
+        // Same legacy mapping for cancel revert
         let normalizedParams = storedParams;
-        if (storedParams === 'bg-red-50' || storedParams === 'bg-red-100') normalizedParams = '#fee2e2';
-        else if (storedParams === 'bg-amber-50' || storedParams === 'bg-amber-100') normalizedParams = '#fef3c7';
-        else if (storedParams === 'bg-emerald-50' || storedParams === 'bg-emerald-100') normalizedParams = '#d1fae5';
+        if (storedParams === 'bg-red-50' || storedParams === 'bg-red-100') normalizedParams = '#890000';
+        else if (storedParams === 'bg-amber-50' || storedParams === 'bg-amber-100') normalizedParams = '#b45309';
+        else if (storedParams === 'bg-emerald-50' || storedParams === 'bg-emerald-100') normalizedParams = '#064e3b';
 
         setRowEffect(normalizedParams);
         setAllowSkip(meta?.allowSkip || false);
@@ -394,6 +395,13 @@ export function ProtocolItemRow({ item, index, allItems, users }: ProtocolItemRo
                             {/* Row Effect Dropdown */}
                             {/* Row Effect Color Picker (Visual) */}
                             <div className="border-l pl-3 ml-1 border-slate-200 dark:border-slate-700 flex items-center gap-2">
+                                {/* Presets for Pekat Colors */}
+                                <div className="flex gap-1 mr-1">
+                                    <button type="button" onClick={() => setRowEffect('#890000')} className="w-4 h-4 rounded-full bg-[#890000] border border-slate-200 hover:scale-110 transition-transform" title="Deep Red" />
+                                    <button type="button" onClick={() => setRowEffect('#b45309')} className="w-4 h-4 rounded-full bg-[#b45309] border border-slate-200 hover:scale-110 transition-transform" title="Deep Amber" />
+                                    <button type="button" onClick={() => setRowEffect('#064e3b')} className="w-4 h-4 rounded-full bg-[#064e3b] border border-slate-200 hover:scale-110 transition-transform" title="Deep Emerald" />
+                                </div>
+
                                 <label className="flex items-center gap-1.5 cursor-pointer group/effect" title="Select Row Color Effect">
                                     <div className="relative">
                                         <div
@@ -402,7 +410,7 @@ export function ProtocolItemRow({ item, index, allItems, users }: ProtocolItemRo
                                         />
                                         <input
                                             type="color"
-                                            value={rowEffect && rowEffect.startsWith('#') ? rowEffect : '#ef4444'}
+                                            value={rowEffect && rowEffect.startsWith('#') && rowEffect.length <= 7 ? rowEffect : '#890000'}
                                             onChange={(e) => setRowEffect(e.target.value)}
                                             className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
                                         />
@@ -515,9 +523,9 @@ export function ProtocolItemRow({ item, index, allItems, users }: ProtocolItemRo
 
                                             // Map legacy class to hex for display
                                             let displayColor = rowColor;
-                                            if (rowColor.includes('red')) displayColor = '#fee2e2';
-                                            else if (rowColor.includes('amber')) displayColor = '#fef3c7';
-                                            else if (rowColor.includes('emerald')) displayColor = '#d1fae5';
+                                            if (rowColor.includes('red')) displayColor = '#890000';
+                                            else if (rowColor.includes('amber')) displayColor = '#b45309';
+                                            else if (rowColor.includes('emerald')) displayColor = '#064e3b';
 
                                             return (
                                                 <span className="text-[9px] font-bold text-slate-500 bg-slate-50 px-1 py-0.5 rounded border border-slate-100 flex items-center gap-1 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700" title="Completion Row Effect">

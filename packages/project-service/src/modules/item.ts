@@ -130,10 +130,18 @@ export async function updateItemStatus(prisma: PrismaClient, ctx: ProjectContext
         if (!itemToCheck.startDate) {
             dataUpdate.startDate = now;
         }
-        // If we are reopening, clear the end date
-        if (itemToCheck.status === 'DONE') {
+        // If we are reopening, clear the end date and completer
+        if (itemToCheck.status === 'DONE' || itemToCheck.status === 'SKIPPED') {
             dataUpdate.endDate = null;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (dataUpdate as any).completedById = null;
         }
+    }
+
+    if (newStatus === 'DONE' || newStatus === 'SKIPPED') {
+        // Record who completed it
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (dataUpdate as any).completedById = ctx.userId;
     }
 
     const item = await prisma.projectItem.update({
