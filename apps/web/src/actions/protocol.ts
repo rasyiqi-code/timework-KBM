@@ -73,8 +73,10 @@ export type ProtocolWithDetails = Prisma.ProtocolGetPayload<{
           include: {
             defaultAssignee: true;
             defaultAssignees: true;
+            allowedFileViewers: true;
           }
         };
+        allowedFileViewers: true;
       };
     };
   };
@@ -100,10 +102,12 @@ export async function getProtocolById(id: string): Promise<ProtocolWithDetails |
     include: {
       defaultAssignee: true,
       defaultAssignees: true,
+      allowedFileViewers: true,
       children: {
         include: {
           defaultAssignee: true,
-          defaultAssignees: true
+          defaultAssignees: true,
+          allowedFileViewers: true
         }
       }
     },

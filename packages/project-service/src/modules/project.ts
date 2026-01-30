@@ -79,7 +79,12 @@ export async function getProjectsMatrix(
                                 }
                             }
                         }
-                    }
+                    },
+                    // Access Control Fields
+                    fileAccess: true,
+                    assignedToId: true,
+                    assignees: { select: { id: true } },
+                    allowedFileViewers: { select: { id: true } }
                 }
             }
         }
