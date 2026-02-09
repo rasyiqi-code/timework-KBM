@@ -2,7 +2,7 @@
 
 import { prisma } from '@/lib/db';
 import { getCurrentUser } from '@/actions/auth';
-import type { ProtocolItemType } from '@repo/database';
+import type { ProtocolItemType, Prisma } from '@repo/database';
 
 export type NoteItem = {
     id: string;
@@ -28,38 +28,41 @@ export async function getAllNotes(): Promise<NoteItem[]> {
 
     const isAdmin = user.role === 'ADMIN' || user.role === 'SUPER_ADMIN';
 
-    const items = await prisma.projectItem.findMany({
-        where: {
-            project: {
-                organizationId: user.organizationId,
-                deletedAt: null // Only active projects
-            },
-            OR: [
-                { type: 'NOTE' },
-                {
-                    type: 'TASK',
-                    description: { not: null }
-                }
-            ],
-            // Access Control - Use string literals for IDE compatibility
-            ...(isAdmin ? {} : ({
-                AND: [
+    // Build the query where clause safely
+    const where: Prisma.ProjectItemWhereInput = {
+        project: {
+            organizationId: user.organizationId,
+            deletedAt: null // Only active projects
+        },
+        OR: [
+            { type: 'NOTE' },
+            {
+                type: 'TASK',
+                description: { not: null }
+            }
+        ]
+    };
+
+    if (!isAdmin) {
+        where.AND = [
+            {
+                OR: [
+                    { fileAccess: 'PUBLIC' },
                     {
+                        fileAccess: 'RESTRICTED',
                         OR: [
-                            { fileAccess: 'PUBLIC' },
-                            {
-                                fileAccess: 'RESTRICTED',
-                                OR: [
-                                    { assignedToId: user.id },
-                                    { assignees: { some: { id: user.id } } },
-                                    { allowedFileViewers: { some: { id: user.id } } }
-                                ]
-                            }
+                            { assignedToId: user.id },
+                            { assignees: { some: { id: user.id } } },
+                            { allowedFileViewers: { some: { id: user.id } } }
                         ]
                     }
                 ]
-            } as any))
-        },
+            }
+        ];
+    }
+
+    const items = await prisma.projectItem.findMany({
+        where,
         select: {
             id: true,
             title: true,
@@ -84,7 +87,6 @@ export async function getAllNotes(): Promise<NoteItem[]> {
         }
     }) as unknown as NoteItem[];
 
-    // Filter out tasks with empty descriptions if any slipped through (e.g. empty string)
     // Filter out items with empty descriptions
     return items.filter(item => {
         const hasDescription = item.description && item.description.trim().length > 0;

@@ -1,21 +1,18 @@
 'use client';
 
-import Link from 'next/link';
 import { format } from 'date-fns';
 import { type Dictionary } from '@/i18n/dictionaries';
-import { Trash2, Loader2, Download, Paperclip, Lock } from 'lucide-react';
+import { Loader2, Info } from 'lucide-react';
 import { deleteProject, getProjectsMatrix } from '@/actions/project';
 import { toast } from 'sonner';
 import { useState, useTransition, useEffect, useRef } from 'react';
 import * as XLSX from 'xlsx';
 
 import { useProjectListRealtime } from '@/hooks/useProjectListRealtime';
-
-type ProjectItemMetadata = {
-    completionEffect?: {
-        rowColor: string | null;
-    } | null;
-};
+import { getProjectColor } from './utils';
+import { SimpleTooltip } from '../ui/simple-tooltip';
+import { ProjectTableFilters } from './ProjectTableFilters';
+import { ProjectTableRow } from './ProjectTableRow';
 
 export interface ProjectTableProps {
     projects: {
@@ -38,6 +35,7 @@ export interface ProjectTableProps {
     headers: {
         id: string;
         title: string;
+        order: number;
     }[];
     dict: Dictionary;
     nextCursor?: string;
@@ -59,71 +57,11 @@ export function ProjectTable({ projects: initialProjects, headers, dict, nextCur
     const [isPending, startTransition] = useTransition();
     const [isLoadingMore, setIsLoadingMore] = useState(false);
 
-    // Horizontal Scroll Logic with non-passive listener to prevent default page scroll
-    useEffect(() => {
-        const container = tableContainerRef.current;
-        if (!container) return;
-
-        const handleWheel = (e: WheelEvent) => {
-            if (e.deltaY !== 0) {
-                e.preventDefault();
-                container.scrollLeft += e.deltaY;
-            }
-        };
-
-        container.addEventListener('wheel', handleWheel, { passive: false });
-
-        return () => {
-            container.removeEventListener('wheel', handleWheel);
-        };
-    }, []);
-
     // Filter Logic State
     const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState<'ALL' | 'ACTIVE' | 'COMPLETED'>('ALL');
     const [protocolFilter, setProtocolFilter] = useState<string>('ALL');
     const [colorFilter, setColorFilter] = useState<string | null>(null);
-
-    // Extract Color Logic for reuse
-    // Darker Colors for "Pekat" look
-    const COLOR_MAP = {
-        RED: '#890000',    // Deep Red/Maroon
-        AMBER: '#b45309',  // Amber 700
-        EMERALD: '#064e3b' // Emerald 900
-    };
-
-    const getProjectColor = (project: ProjectTableProps['projects'][0]) => {
-        const total = project.items.length;
-        const done = project.items.filter(i => i.status === 'DONE' || i.status === 'SKIPPED');
-
-        // 1. All Done -> Green (Global Rule)
-        if (total > 0 && done.length === total) {
-            return { color: COLOR_MAP.EMERALD, label: 'All Completed' };
-        }
-
-        // 2. Check for completion effects
-        if (done.length > 0) {
-            // Sort by latest first
-            const sortedDone = [...done].sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
-
-            // Find the most recent item that has a row effect
-            for (const item of sortedDone) {
-                const meta = item.metadata as unknown as ProjectItemMetadata;
-                const rowColor = meta?.completionEffect?.rowColor;
-
-                if (rowColor) {
-                    // Handle Legacy Classes -> Hex Map
-                    if (rowColor.includes('red')) return { color: COLOR_MAP.RED, label: item.title };
-                    if (rowColor.includes('amber')) return { color: COLOR_MAP.AMBER, label: item.title };
-                    if (rowColor.includes('emerald')) return { color: COLOR_MAP.EMERALD, label: item.title };
-
-                    // Assume Hex
-                    return { color: rowColor, label: item.title };
-                }
-            }
-        }
-        return null;
-    };
 
     // Resizable Column Logic State
     const [colWidth, setColWidth] = useState(350);
@@ -163,6 +101,38 @@ export function ProjectTable({ projects: initialProjects, headers, dict, nextCur
         document.body.style.cursor = 'col-resize';
     };
 
+    const filteredProjects = projects.filter(project => {
+        const matchesSearch = project.title.toLowerCase().includes(searchQuery.toLowerCase());
+
+        // Dynamic Status Logic for Filter
+        const total = project.items.length;
+        const done = project.items.filter(i => i.status === 'DONE' || i.status === 'SKIPPED').length;
+        const percent = total > 0 ? Math.round((done / total) * 100) : 0;
+        const effectiveStatus = percent === 100 ? 'COMPLETED' : project.status;
+
+        const matchesStatus = statusFilter === 'ALL' || effectiveStatus === statusFilter;
+
+        // Protocol Filter (Check protocolId if available, or try to infer? Assuming protocolId exists on project or strict typing will fail)
+        // We need to cast project to any or update type definition to include protocolId
+        // The projects prop type definition below needs update.
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const matchesProtocol = protocolFilter === 'ALL' || (project as any).protocolId === protocolFilter;
+
+        return matchesSearch && matchesStatus && matchesProtocol;
+    }).sort((a, b) => {
+        if (!colorFilter) return 0;
+
+        const infoA = getProjectColor(a);
+        const infoB = getProjectColor(b);
+
+        const aMatches = infoA?.color === colorFilter;
+        const bMatches = infoB?.color === colorFilter;
+
+        if (aMatches && !bMatches) return -1;
+        if (!aMatches && bMatches) return 1;
+        return 0;
+    });
+
     const handleExport = () => {
         try {
             // Group projects by protocolId
@@ -196,25 +166,14 @@ export function ProjectTable({ projects: initialProjects, headers, dict, nextCur
                 // If we are exporting ALL, we need to derive headers for THIS protocol's projects.
                 // Strategy: Use the union of all item originProtocolItemId and Titles from projects in this group.
 
-                const groupHeadersMap = new Map<string, string>(); // ID -> Title
-                const groupHeadersOrder: string[] = []; // IDs in order
+                // 1. Determine Headers for this specific group from the global headers prop
+                // Filter the global headers to only include those present in this group's projects
+                const groupOriginIds = new Set<string>();
+                projectsGroup.forEach(p => p.items.forEach(i => {
+                    if (i.originProtocolItemId) groupOriginIds.add(i.originProtocolItemId);
+                }));
 
-                // 1. If we have global headers matching this protocol (how do we know?)
-                // Actually, relying on project items is safer for mixed exports.
-
-                // Collect unique "Columns" based on originProtocolItemId (preferred) or Title
-                projectsGroup.forEach(p => {
-                    p.items.forEach(i => {
-                        const key = i.originProtocolItemId || i.title;
-                        if (!groupHeadersMap.has(key)) {
-                            groupHeadersMap.set(key, i.title);
-                            groupHeadersOrder.push(key);
-                        }
-                    });
-                });
-
-                // Sort headers? Maybe by appearance order in the first few projects is good enough heuristic 
-                // or just keep insertion order. Better: Sort by simple heuristic if needed, but insertion order from multiple projects usually converges to the SOP order if projects are created from SOP.
+                const groupHeaders = headers.filter(h => groupOriginIds.has(h.id));
 
                 // Prepare Data
                 const exportData = projectsGroup.map(project => {
@@ -229,16 +188,12 @@ export function ProjectTable({ projects: initialProjects, headers, dict, nextCur
                         'Progress': `${percent}%`,
                     };
 
-                    // Fill Columns
-                    groupHeadersOrder.forEach(key => {
-                        const colTitle = groupHeadersMap.get(key) || key;
+                    // Fill Columns Based on SOP Headers
+                    groupHeaders.forEach(header => {
+                        const colTitle = header.title;
 
-                        // Find item matching key
-                        // Key is either ID or Title
-                        const item = project.items.find(i =>
-                            i.originProtocolItemId === key ||
-                            (!i.originProtocolItemId && i.title === key)
-                        );
+                        // Find item matching this specific protocol item ID
+                        const item = project.items.find(i => i.originProtocolItemId === header.id);
 
                         if (item) {
                             const statusLabel = dict.project.status[item.status as keyof typeof dict.project.status]?.replace('_', ' ') || item.status;
@@ -328,40 +283,6 @@ export function ProjectTable({ projects: initialProjects, headers, dict, nextCur
         }
     };
 
-
-
-    const filteredProjects = projects.filter(project => {
-        const matchesSearch = project.title.toLowerCase().includes(searchQuery.toLowerCase());
-
-        // Dynamic Status Logic for Filter
-        const total = project.items.length;
-        const done = project.items.filter(i => i.status === 'DONE' || i.status === 'SKIPPED').length;
-        const percent = total > 0 ? Math.round((done / total) * 100) : 0;
-        const effectiveStatus = percent === 100 ? 'COMPLETED' : project.status;
-
-        const matchesStatus = statusFilter === 'ALL' || effectiveStatus === statusFilter;
-
-        // Protocol Filter (Check protocolId if available, or try to infer? Assuming protocolId exists on project or strict typing will fail)
-        // We need to cast project to any or update type definition to include protocolId
-        // The projects prop type definition below needs update.
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const matchesProtocol = protocolFilter === 'ALL' || (project as any).protocolId === protocolFilter;
-
-        return matchesSearch && matchesStatus && matchesProtocol;
-    }).sort((a, b) => {
-        if (!colorFilter) return 0;
-
-        const infoA = getProjectColor(a);
-        const infoB = getProjectColor(b);
-
-        const aMatches = infoA?.color === colorFilter;
-        const bMatches = infoB?.color === colorFilter;
-
-        if (aMatches && !bMatches) return -1;
-        if (!aMatches && bMatches) return 1;
-        return 0;
-    });
-
     if (projects.length === 0) {
         return (
             <div className="text-center py-12 border border-dashed border-slate-300 rounded-xl bg-slate-50 dark:bg-slate-900/50 dark:border-slate-800">
@@ -378,112 +299,27 @@ export function ProjectTable({ projects: initialProjects, headers, dict, nextCur
 
     return (
         <div className="space-y-4">
-            {/* Filter Bar */}
-            <div className="flex flex-col sm:flex-row gap-3 items-center bg-white dark:bg-slate-900 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+            <ProjectTableFilters
+                searchQuery={searchQuery}
+                setSearchQuery={setSearchQuery}
+                protocolFilter={protocolFilter}
+                setProtocolFilter={setProtocolFilter}
+                statusFilter={statusFilter}
+                setStatusFilter={setStatusFilter}
+                colorFilter={colorFilter}
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                setColorFilter={setColorFilter as any} // Cast because logic uses prev state and our interface was simplified? No, wait. 
+                // setColorFilter in ProjectsTableFilters expects (filter: string | null) => void.
+                // useState returns Dispatch<SetStateAction<string | null>> which is compatible with value setter but not generic enough if we pass function. 
+                // But in Filters we use `setColorFilter(val)` or `setColorFilter(null)`. We don't use functional updates in the Filters UI logic itself except implicitly?
+                // Actually in Filters UI: `setColorFilter(prev => ...)` is NOT used. `onClick={() => setColorFilter(colorFilter === color ? null : color)}` is used.
+                // Use `colorFilter` prop value for logic.
 
-                {/* Left Group: Search & Dropdowns */}
-                <div className="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto shrink-0">
-                    {/* Search Input */}
-                    <div className="relative w-full sm:w-56">
-                        <div className="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
-                            <svg className="h-3.5 w-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                            </svg>
-                        </div>
-                        <input
-                            placeholder={dict.project.searchPlaceholder}
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className="block w-full pl-8 pr-3 py-1.5 border border-slate-200 rounded-md leading-5 bg-slate-50 text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white dark:focus:bg-slate-800 focus:ring-1 focus:ring-[#cd1717] focus:border-[#cd1717] text-xs sm:text-sm transition-colors dark:bg-slate-800 dark:border-slate-700 dark:text-slate-100"
-                        />
-                    </div>
-
-                    {/* Filters Group */}
-                    <div className="flex items-center gap-2 w-full sm:w-auto">
-                        <div className="relative w-full sm:w-auto">
-                            <select
-                                value={protocolFilter}
-                                onChange={(e) => setProtocolFilter(e.target.value)}
-                                className="block w-full sm:w-auto pl-3 pr-8 py-1.5 text-xs sm:text-sm text-slate-900 border-slate-200 focus:outline-none focus:ring-[#cd1717] focus:border-[#cd1717] rounded-md bg-slate-50 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-100 dark:focus:bg-slate-800 max-w-[150px] truncate"
-                            >
-                                <option value="ALL">{dict.project.allProtocols}</option>
-                                {protocols?.map(p => (
-                                    <option key={p.id} value={p.id}>{p.name}</option>
-                                ))}
-                            </select>
-                        </div>
-
-                        <div className="relative w-full sm:w-auto">
-                            <select
-                                value={statusFilter}
-                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                onChange={(e) => setStatusFilter(e.target.value as any)}
-                                className="block w-full sm:w-auto pl-3 pr-8 py-1.5 text-xs sm:text-sm text-slate-900 border-slate-200 focus:outline-none focus:ring-[#cd1717] focus:border-[#cd1717] rounded-md bg-slate-50 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-100 dark:focus:bg-slate-800"
-                            >
-                                <option value="ALL">{dict.project.allStatus}</option>
-                                <option value="ACTIVE">{dict.project.status.ACTIVE}</option>
-                                <option value="COMPLETED">{dict.project.status.COMPLETED}</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Middle Group: Color Legend (Scrollable) */}
-                <div className="flex-1 w-full sm:w-auto min-w-0 border-l border-slate-200 pl-3 ml-1 dark:border-slate-700">
-                    <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar mask-gradient-right py-1">
-                        {(() => {
-                            // Dynamically generate legend from Visible Projects
-                            const uniqueEffects = new Map<string, string>(); // color -> label
-                            projects.forEach(p => {
-                                const info = getProjectColor(p);
-                                if (info && info.color && !uniqueEffects.has(info.color)) {
-                                    uniqueEffects.set(info.color, info.label);
-                                }
-                            });
-
-                            if (uniqueEffects.size === 0) return <span className="text-xs text-slate-400 italic px-2">No active filters</span>;
-
-                            return (
-                                <>
-                                    {Array.from(uniqueEffects.entries()).map(([color, label]) => (
-                                        <button
-                                            key={color}
-                                            onClick={() => setColorFilter(prev => prev === color ? null : color)}
-                                            className={`h-6 px-2.5 rounded-full flex items-center gap-1.5 transition-all text-[10px] font-medium border whitespace-nowrap shrink-0 ${colorFilter === color
-                                                ? `ring-2 ring-offset-1 ring-slate-400 border-transparent shadow-sm`
-                                                : 'border-slate-200 hover:scale-105 dark:border-slate-700 bg-white dark:bg-slate-800'
-                                                }`}
-                                            title={`Filter: ${label}`}
-                                            style={colorFilter === color ? { backgroundColor: color, color: '#000' } : {}}
-                                        >
-                                            <div className="w-2.5 h-2.5 rounded-full border border-black/10 shadow-sm" style={{ backgroundColor: color }} />
-                                            <span className={colorFilter === color ? 'font-bold' : 'text-slate-600 dark:text-slate-300'}>{label}</span>
-                                        </button>
-                                    ))}
-                                    {colorFilter && (
-                                        <button
-                                            onClick={() => setColorFilter(null)}
-                                            className="text-xs text-slate-400 hover:text-slate-600 px-1 dark:text-slate-500 dark:hover:text-slate-300 whitespace-nowrap sticky right-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm"
-                                        >
-                                            Clear
-                                        </button>
-                                    )}
-                                </>
-                            );
-                        })()}
-                    </div>
-                </div>
-
-                {/* Right Group: Export */}
-                <button
-                    onClick={handleExport}
-                    className="flex shrink-0 items-center gap-2 px-3 py-1.5 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors shadow-sm text-xs sm:text-sm font-medium focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1 dark:focus:ring-offset-slate-900"
-                    title="Export to Excel"
-                >
-                    <Download size={16} />
-                    <span className="hidden sm:inline">Export Excel</span>
-                </button>
-            </div>
+                protocols={protocols}
+                projects={projects}
+                handleExport={handleExport}
+                dict={dict}
+            />
 
             {/* Table Container with Horizontal Scroll on Wheel */}
             <div
@@ -504,14 +340,31 @@ export function ProjectTable({ projects: initialProjects, headers, dict, nextCur
                                     className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-[#cd1717] active:bg-[#a50f0f] transition-colors z-30"
                                 ></div>
                             </th>
-                            <th className="px-4 py-2 text-xs font-black uppercase tracking-wider text-black whitespace-nowrap border-l border-slate-100 dark:border-slate-800 dark:text-slate-100">
-                                {dict.project.detail.progress}
+                            <th className="px-4 py-2 text-xs font-black uppercase tracking-wider text-black whitespace-nowrap border-l border-slate-100 dark:border-slate-800 dark:text-slate-100 group">
+                                <div className="flex items-center gap-1.5">
+                                    {dict.project.detail.progress}
+                                    <SimpleTooltip content="Tips: Tahan tombol Shift + Scroll Mouse untuk menggeser tabel secara horizontal">
+                                        <Info size={14} className="text-slate-400 hover:text-slate-600 transition-colors cursor-help opacity-0 group-hover:opacity-100" />
+                                    </SimpleTooltip>
+                                </div>
                             </th>
-                            {headers.map(header => (
-                                <th key={header.id} className="px-4 py-2 text-xs font-black uppercase tracking-wider text-black whitespace-nowrap border-l border-slate-100 dark:border-slate-800 dark:text-slate-100">
-                                    {header.title}
-                                </th>
-                            ))}
+                            {(() => {
+                                // 1. Deduplicate Headers by Title
+                                const uniqueHeadersMap = new Map<string, typeof headers[0]>();
+                                headers.forEach(h => {
+                                    if (!uniqueHeadersMap.has(h.title)) {
+                                        uniqueHeadersMap.set(h.title, h);
+                                    }
+                                });
+                                const uniqueHeaders = Array.from(uniqueHeadersMap.values())
+                                    .sort((a, b) => (a.order || 0) - (b.order || 0)); // Strict Sort by Order
+
+                                return uniqueHeaders.map(header => (
+                                    <th key={header.title} className="px-4 py-2 text-xs font-black uppercase tracking-wider text-black whitespace-nowrap border-l border-slate-100 dark:border-slate-800 dark:text-slate-100">
+                                        {header.title}
+                                    </th>
+                                ));
+                            })()}
                             {(currentUser && (currentUser.role === 'ADMIN' || currentUser.role === 'SUPER_ADMIN')) && (
                                 <th className="px-4 py-2 text-xs font-bold uppercase tracking-wider text-slate-500 text-right sticky right-0 bg-slate-50 z-20 dark:bg-slate-900 dark:text-slate-400">
                                     {dict.project.detail.settings}
@@ -527,158 +380,18 @@ export function ProjectTable({ projects: initialProjects, headers, dict, nextCur
                                 </td>
                             </tr>
                         ) : (
-                            filteredProjects.map(project => {
-                                // Calculate Status dynamically
-                                const total = project.items.length;
-                                const done = project.items.filter(i => i.status === 'DONE' || i.status === 'SKIPPED').length;
-                                const percent = total > 0 ? Math.round((done / total) * 100) : 0;
-                                const effectiveStatus = percent === 100 ? 'COMPLETED' : project.status;
-
-                                return (
-                                    <tr
-                                        key={project.id}
-                                        className="hover:shadow-sm transition-all border-b border-slate-100 dark:border-slate-800"
-                                        style={(() => {
-                                            const info = getProjectColor(project);
-                                            if (info?.color) return { backgroundColor: info.color + '40' }; // 25% opacity for row
-                                            return {};
-                                        })()}
-                                    >
-                                        {/* Project Title Column */}
-                                        <td
-                                            className="px-4 py-2 sticky left-0 bg-white z-10 dark:bg-slate-900 border-r border-slate-100 dark:border-slate-800"
-                                            style={{ width: colWidth, minWidth: colWidth, maxWidth: colWidth }}
-                                        >
-                                            <Link href={`/projects/${project.id}`} className="group block" title={project.title}>
-                                                <div className="flex items-center gap-2 w-full">
-                                                    <span className="font-bold text-sm text-slate-900 group-hover:text-[#cd1717] transition-colors dark:text-white dark:group-hover:text-[#cd1717] truncate">
-                                                        {project.title}
-                                                    </span>
-                                                    <span className={`text-[10px] uppercase font-black tracking-wider px-1.5 py-0.5 rounded border shrink-0 ${effectiveStatus === 'ACTIVE' ? 'bg-emerald-50 text-emerald-900 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-100 dark:border-emerald-800' :
-                                                        effectiveStatus === 'COMPLETED' ? 'bg-blue-50 text-blue-900 border-blue-200 dark:bg-blue-900/30 dark:text-blue-100 dark:border-blue-800' :
-                                                            'bg-slate-100 text-slate-900 border-slate-300 dark:bg-slate-800 dark:text-slate-100 dark:border-slate-700'
-                                                        }`}>
-                                                        {dict.project.status[effectiveStatus as keyof typeof dict.project.status]}
-                                                    </span>
-                                                </div>
-                                            </Link>
-                                        </td>
-
-                                        {/* Progress Column */}
-                                        <td className="px-4 py-2 border-r border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900">
-                                            <div className="w-24">
-                                                <div className="flex justify-between items-end mb-1">
-                                                    <span className="text-[10px] font-medium text-slate-500 dark:text-slate-400">
-                                                        {percent}%
-                                                    </span>
-                                                    <span className="text-[10px] text-slate-400 dark:text-slate-500">
-                                                        {done}/{total}
-                                                    </span>
-                                                </div>
-                                                <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden dark:bg-slate-800">
-                                                    <div
-                                                        className={`h-full rounded-full transition-all duration-500 ${percent === 100 ? 'bg-emerald-700' : 'bg-[#890000]'
-                                                            }`}
-                                                        style={{ width: `${percent}%` }}
-                                                    ></div>
-                                                </div>
-                                            </div>
-                                        </td>
-
-                                        {/* Dynamic Task Columns */}
-                                        {headers.map(header => {
-                                            // Find matching item in project
-                                            const item = project.items.find(i =>
-                                                i.originProtocolItemId === header.id ||
-                                                (i.title === header.title && !i.originProtocolItemId) // Fallback by Title
-                                            );
-
-                                            if (!item) {
-                                                return <td key={header.id} className="px-4 py-2 text-center border-l border-slate-100 dark:border-slate-800 bg-slate-200 dark:bg-black/40">
-                                                    <span className="text-slate-400 text-xs dark:text-slate-600">-</span>
-                                                </td>;
-                                            }
-
-                                            const isDone = item.status === 'DONE';
-                                            const isSkipped = item.status === 'SKIPPED';
-
-                                            // Render Cell
-                                            return (
-                                                <td key={header.id} className={`px-4 py-2 border-l border-slate-100 dark:border-slate-800 whitespace-nowrap ${isDone ? 'bg-emerald-50/10' : isSkipped ? 'bg-slate-50/50' : ''}`}>
-                                                    {isDone || isSkipped ? (
-                                                        <div className="flex flex-col relative group/info">
-                                                            <span className={`text-xs font-bold ${isDone ? 'text-emerald-700 dark:text-emerald-400' : 'text-slate-500 dark:text-slate-400'}`}>
-                                                                {isSkipped ? '⏭ SKIPPED' : format(new Date(item.updatedAt), 'dd/MM/yyyy')}
-                                                            </span>
-                                                            <div className="flex items-center gap-2">
-                                                                <span className={`text-[10px] ${isDone ? 'text-emerald-600/70 dark:text-emerald-500/70' : 'text-slate-400/70 dark:text-slate-500/70'}`}>
-                                                                    {format(new Date(item.updatedAt), 'HH:mm')}
-                                                                </span>
-                                                                {item.files?.length > 0 && (
-                                                                    <div className="flex items-center gap-0.5 text-[10px] text-slate-400 dark:text-slate-500" title="Attachments">
-                                                                        <Paperclip size={10} />
-                                                                        <span>{item.files.length}</span>
-                                                                    </div>
-                                                                )}
-                                                            </div>
-
-                                                            {/* Done/Skipped By Tooltip */}
-                                                            {item.completedBy?.name && (
-                                                                <div className="absolute bottom-full left-0 mb-1 w-max hidden group-hover/info:block z-50">
-                                                                    <div className="bg-slate-800 text-white text-[10px] px-2 py-1 rounded shadow-lg whitespace-nowrap">
-                                                                        by {item.completedBy.name}
-                                                                    </div>
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    ) : (
-                                                        <div className="flex items-center gap-1.5 opacity-50 relative group/status">
-                                                            {item.status === 'LOCKED' ? (
-                                                                <Lock size={12} className="text-slate-400" />
-                                                            ) : (
-                                                                <span className={`w-1.5 h-1.5 rounded-full ${item.status === 'IN_PROGRESS' ? 'bg-amber-600' :
-                                                                    item.status === 'OPEN' ? 'bg-[#890000]' : 'bg-slate-400'
-                                                                    }`}></span>
-                                                            )}
-                                                            <span className="text-[10px] text-slate-700 uppercase font-bold dark:text-slate-400">
-                                                                {item.status === 'LOCKED' ? 'LOCKED' : dict.project.status[item.status as keyof typeof dict.project.status].replace('_', ' ')}
-                                                            </span>
-
-                                                            {/* Contextual Lock Tooltip */}
-                                                            {item.status === 'LOCKED' && item.dependsOn && item.dependsOn.length > 0 && (
-                                                                <div className="absolute bottom-full left-0 mb-1 w-max max-w-[200px] hidden group-hover/status:block z-50">
-                                                                    <div className="bg-slate-800 text-white text-[10px] px-2 py-1 rounded shadow-lg">
-                                                                        <div className="font-bold mb-0.5">Wait For:</div>
-                                                                        {item.dependsOn.map(dep => (
-                                                                            <div key={dep.prerequisite.id} className="flex items-center gap-1">
-                                                                                {dep.prerequisite.status === 'DONE' ? '✅' : '🔒'} {dep.prerequisite.title}
-                                                                            </div>
-                                                                        ))}
-                                                                    </div>
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    )}
-                                                </td>
-                                            );
-                                        })}
-
-                                        {/* Actions Column (Admin Only) */}
-                                        {(currentUser && (currentUser.role === 'ADMIN' || currentUser.role === 'SUPER_ADMIN')) && (
-                                            <td className="px-4 py-2 text-right sticky right-0 bg-white z-10 dark:bg-slate-900 border-l border-slate-100 dark:border-slate-800">
-                                                <button
-                                                    onClick={() => handleDelete(project.id)}
-                                                    disabled={isPending}
-                                                    className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors dark:hover:bg-red-900/20"
-                                                    title={dict.common.delete}
-                                                >
-                                                    <Trash2 size={16} />
-                                                </button>
-                                            </td>
-                                        )}
-                                    </tr>
-                                )
-                            })
+                            filteredProjects.map(project => (
+                                <ProjectTableRow
+                                    key={project.id}
+                                    project={project}
+                                    headers={headers}
+                                    colWidth={colWidth}
+                                    dict={dict}
+                                    currentUser={currentUser}
+                                    handleDelete={handleDelete}
+                                    isPending={isPending}
+                                />
+                            ))
                         )}
                     </tbody>
                 </table>

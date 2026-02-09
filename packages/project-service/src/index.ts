@@ -51,7 +51,7 @@ export class ProjectService {
         return ProjectModule.getProjects(this.prisma, ctx);
     }
 
-    async getProjectsMatrix(ctx: ProjectContext, limit: number = 50, cursor?: string): Promise<{ projects: (Project & { items: Pick<ProjectItem, 'id' | 'title' | 'status' | 'updatedAt' | 'originProtocolItemId'>[] })[], headers: Pick<ProtocolItem, 'id' | 'title'>[], nextCursor?: string }> {
+    async getProjectsMatrix(ctx: ProjectContext, limit: number = 50, cursor?: string): Promise<{ projects: (Project & { items: Pick<ProjectItem, 'id' | 'title' | 'status' | 'updatedAt' | 'originProtocolItemId'>[] })[], headers: Pick<ProtocolItem, 'id' | 'title' | 'order'>[], nextCursor?: string }> {
         return ProjectModule.getProjectsMatrix(this.prisma, ctx, limit, cursor);
     }
 

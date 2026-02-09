@@ -99,7 +99,7 @@ export default async function RootLayout({
             { assignedToId: currentUser.id },
             { assignees: { some: { id: currentUser.id } } },
             { allowedFileViewers: { some: { id: currentUser.id } } }
-          ] as any
+          ]
         }
       });
       canSeeFileManager = count > 0;

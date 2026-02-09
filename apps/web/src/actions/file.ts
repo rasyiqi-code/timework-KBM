@@ -212,12 +212,12 @@ export async function getAllFilesGroupedByProject() {
                 orderBy: { createdAt: 'desc' },
                 include: {
                     uploadedBy: { select: { name: true } },
-                    task: { select: { title: true, fileAccess: true } as any }
+                    task: { select: { title: true, fileAccess: true } }
                 }
             }
         },
         orderBy: { updatedAt: 'desc' }
     });
 
-    return projects as any[];
+    return projects;
 }

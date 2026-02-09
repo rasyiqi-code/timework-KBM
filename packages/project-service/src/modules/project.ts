@@ -24,7 +24,7 @@ export async function getProjectsMatrix(
     cursor?: string
 ): Promise<{
     projects: (Project & { items: { id: string; title: string; status: string; updatedAt: Date; originProtocolItemId: string | null; metadata: unknown; files: { id: string; name: string; url: string; size: number; createdAt: Date; type: string; uploadedBy: { name: string | null; email: string } }[]; dependsOn?: { prerequisite: { id: string; title: string; status: string } }[]; completedBy: { name: string | null } | null }[] })[],
-    headers: Pick<ProtocolItem, 'id' | 'title'>[],
+    headers: Pick<ProtocolItem, 'id' | 'title' | 'order'>[],
     nextCursor?: string
 }> {
     if (!ctx.organizationId) return { projects: [], headers: [] };
@@ -47,6 +47,7 @@ export async function getProjectsMatrix(
             // Wait, looking at lines 34-67, there is NO select clause, only include. 
             // So protocolId IS included by default since it's a scalar on Project.
             items: {
+                orderBy: { order: 'asc' }, // Ensure items are sorted by SOP order
                 select: {
                     id: true,
                     title: true,
@@ -110,7 +111,7 @@ export async function getProjectsMatrix(
             type: { not: 'GROUP' }
         },
         orderBy: { order: 'asc' },
-        select: { id: true, title: true }
+        select: { id: true, title: true, order: true }
     });
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
