@@ -72,15 +72,17 @@ export function ProjectTableRow({
         >
             {/* Project Title Column */}
             <td
-                className="px-4 py-2 sticky left-0 bg-white z-10 dark:bg-slate-900 border-r border-slate-100 dark:border-slate-800"
-                style={{ width: colWidth, minWidth: colWidth, maxWidth: colWidth }}
+                className="px-4 py-2 md:sticky left-0 z-10 border-r border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 md:bg-transparent"
+                style={{
+                    width: colWidth,
+                    minWidth: colWidth,
+                    maxWidth: colWidth,
+                    backgroundColor: info?.color ? info.color + '33' : undefined
+                }}
             >
                 <Link href={`/projects/${project.id}`} className="group block" title={project.title}>
                     <div className="flex items-center gap-2 w-full">
-                        <span
-                            className="font-bold text-sm text-slate-900 group-hover:text-[#cd1717] transition-colors dark:text-white dark:group-hover:text-[#cd1717] truncate"
-                            style={info?.color ? { color: info.color } : {}}
-                        >
+                        <span className="font-bold text-sm text-slate-900 group-hover:text-[#cd1717] transition-colors dark:text-white dark:group-hover:text-[#cd1717] truncate">
                             {project.title}
                         </span>
                         <span className={`text-[10px] uppercase font-black tracking-wider px-1.5 py-0.5 rounded border shrink-0 ${effectiveStatus === 'ACTIVE' ? 'bg-emerald-50 text-emerald-900 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-100 dark:border-emerald-800' :
@@ -222,7 +224,7 @@ export function ProjectTableRow({
 
             {/* Actions Column (Admin Only) */}
             {(currentUser && (currentUser.role === 'ADMIN' || currentUser.role === 'SUPER_ADMIN')) && (
-                <td className="px-4 py-2 text-right sticky right-0 bg-white z-10 dark:bg-slate-900 border-l border-slate-100 dark:border-slate-800">
+                <td className="px-4 py-2 text-right md:sticky right-0 bg-white dark:bg-slate-900 md:bg-transparent z-10 border-l border-slate-100 dark:border-slate-800">
                     <button
                         onClick={() => handleDelete(project.id)}
                         disabled={isPending}

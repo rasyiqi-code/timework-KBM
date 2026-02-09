@@ -4,12 +4,7 @@ import { Download } from 'lucide-react';
 import { type Dictionary } from '@/i18n/dictionaries';
 import { getProjectColor } from './utils';
 
-// We need to define the Project type structure used in the table
-// Since we don't have a shared type file for this complex structure yet, we'll define a compatible interface here
-// or import it if ProjectTable exports it. Ideally we should export it from ProjectTable or a types file.
-// For now, let's look at ProjectTableProps to see the structure.
-
-interface ProjectTableFiltersProps {
+export interface ProjectTableFiltersProps {
     searchQuery: string;
     setSearchQuery: (query: string) => void;
     protocolFilter: string;
@@ -17,10 +12,7 @@ interface ProjectTableFiltersProps {
     statusFilter: 'ALL' | 'ACTIVE' | 'COMPLETED';
     setStatusFilter: (filter: 'ALL' | 'ACTIVE' | 'COMPLETED') => void;
     colorFilter: string | null;
-    setColorFilter: (filter: string | null) => void; // Allow passing function or value, but here we just pass value usually. Wait, setState accepts function. Let's simplify to value setter for this component interface.
-    // Actually, checking usage: setColorFilter(prev => ...) is used. So it expects a state setter.
-    // Let's type it as Dispatch<SetStateAction<string | null>>
-
+    setColorFilter: (filter: string | null) => void;
     protocols?: { id: string, name: string }[];
     projects: {
         items: {
@@ -29,7 +21,7 @@ interface ProjectTableFiltersProps {
             metadata: unknown;
             title: string;
         }[];
-    }[]; // Minimal structure needed for getProjectColor
+    }[];
     handleExport: () => void;
     dict: Dictionary;
 }
@@ -49,14 +41,14 @@ export function ProjectTableFilters({
     dict
 }: ProjectTableFiltersProps) {
     return (
-        <div className="flex flex-col sm:flex-row gap-3 items-center bg-white dark:bg-slate-900 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+        <div className="flex flex-col lg:flex-row gap-4 items-stretch lg:items-center bg-white dark:bg-slate-900 p-4 lg:px-4 lg:py-2 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm transition-all">
 
             {/* Left Group: Search & Dropdowns */}
-            <div className="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto shrink-0">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:flex items-center gap-3 lg:shrink-0">
                 {/* Search Input */}
-                <div className="relative w-full sm:w-56">
-                    <div className="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
-                        <svg className="h-3.5 w-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div className="relative w-full sm:col-span-2 lg:w-64">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg className="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                         </svg>
                     </div>
@@ -64,46 +56,42 @@ export function ProjectTableFilters({
                         placeholder={dict.project.searchPlaceholder}
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="block w-full pl-8 pr-3 py-1.5 border border-slate-200 rounded-md leading-5 bg-slate-50 text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white dark:focus:bg-slate-800 focus:ring-1 focus:ring-[#cd1717] focus:border-[#cd1717] text-xs sm:text-sm transition-colors dark:bg-slate-800 dark:border-slate-700 dark:text-slate-100"
+                        className="block w-full pl-10 pr-3 py-2 border border-slate-200 rounded-lg leading-5 bg-slate-50 text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white dark:focus:bg-slate-800 focus:ring-2 focus:ring-[#cd1717]/20 focus:border-[#cd1717] text-sm transition-all dark:bg-slate-800 dark:border-slate-700 dark:text-slate-100 placeholder:text-xs"
                     />
                 </div>
 
-                {/* Filters Group */}
-                <div className="flex items-center gap-2 w-full sm:w-auto">
-                    <div className="relative w-full sm:w-auto">
-                        <select
-                            value={protocolFilter}
-                            onChange={(e) => setProtocolFilter(e.target.value)}
-                            className="block w-full sm:w-auto pl-3 pr-8 py-1.5 text-xs sm:text-sm text-slate-900 border-slate-200 focus:outline-none focus:ring-[#cd1717] focus:border-[#cd1717] rounded-md bg-slate-50 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-100 dark:focus:bg-slate-800 max-w-[150px] truncate"
-                        >
-                            <option value="ALL">{dict.project.allProtocols}</option>
-                            {protocols?.map(p => (
-                                <option key={p.id} value={p.id}>{p.name}</option>
-                            ))}
-                        </select>
-                    </div>
+                {/* Filters Dropdowns */}
+                <div className="relative">
+                    <select
+                        value={protocolFilter}
+                        onChange={(e) => setProtocolFilter(e.target.value)}
+                        className="block w-full pl-3 pr-10 py-2 text-sm text-slate-900 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#cd1717]/20 focus:border-[#cd1717] rounded-lg bg-slate-50 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-100 dark:focus:bg-slate-800 truncate appearance-none"
+                    >
+                        <option value="ALL">{dict.project.allProtocols}</option>
+                        {protocols?.map(p => (
+                            <option key={p.id} value={p.id}>{p.name}</option>
+                        ))}
+                    </select>
+                </div>
 
-                    <div className="relative w-full sm:w-auto">
-                        <select
-                            value={statusFilter}
-                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                            onChange={(e) => setStatusFilter(e.target.value as any)}
-                            className="block w-full sm:w-auto pl-3 pr-8 py-1.5 text-xs sm:text-sm text-slate-900 border-slate-200 focus:outline-none focus:ring-[#cd1717] focus:border-[#cd1717] rounded-md bg-slate-50 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-100 dark:focus:bg-slate-800"
-                        >
-                            <option value="ALL">{dict.project.allStatus}</option>
-                            <option value="ACTIVE">{dict.project.status.ACTIVE}</option>
-                            <option value="COMPLETED">{dict.project.status.COMPLETED}</option>
-                        </select>
-                    </div>
+                <div className="relative">
+                    <select
+                        value={statusFilter}
+                        onChange={(e) => setStatusFilter(e.target.value as 'ALL' | 'ACTIVE' | 'COMPLETED')}
+                        className="block w-full pl-3 pr-10 py-2 text-sm text-slate-900 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#cd1717]/20 focus:border-[#cd1717] rounded-lg bg-slate-50 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-100 dark:focus:bg-slate-800 appearance-none"
+                    >
+                        <option value="ALL">{dict.project.allStatus}</option>
+                        <option value="ACTIVE">{dict.project.status.ACTIVE}</option>
+                        <option value="COMPLETED">{dict.project.status.COMPLETED}</option>
+                    </select>
                 </div>
             </div>
 
             {/* Middle Group: Color Legend (Scrollable) */}
-            <div className="flex-1 w-full sm:w-auto min-w-0 border-l border-slate-200 pl-3 ml-1 dark:border-slate-700">
-                <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar mask-gradient-right py-1">
+            <div className="flex-1 min-w-0 lg:border-l border-slate-200 lg:pl-4 dark:border-slate-700">
+                <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
                     {(() => {
-                        // Dynamically generate legend from Visible Projects
-                        const uniqueEffects = new Map<string, string>(); // color -> label
+                        const uniqueEffects = new Map<string, string>();
                         projects.forEach(p => {
                             const info = getProjectColor(p);
                             if (info && info.color && !uniqueEffects.has(info.color)) {
@@ -111,7 +99,12 @@ export function ProjectTableFilters({
                             }
                         });
 
-                        if (uniqueEffects.size === 0) return <span className="text-xs text-slate-400 italic px-2">No active filters</span>;
+                        if (uniqueEffects.size === 0) return (
+                            <div className="flex items-center gap-2 text-slate-400">
+                                <span className="text-[10px] uppercase font-bold tracking-wider">Filter:</span>
+                                <span className="text-xs italic">No active effects</span>
+                            </div>
+                        );
 
                         return (
                             <>
@@ -119,23 +112,26 @@ export function ProjectTableFilters({
                                     <button
                                         key={color}
                                         onClick={() => setColorFilter(colorFilter === color ? null : color)}
-                                        className={`h-6 px-2.5 rounded-full flex items-center gap-1.5 transition-all text-[10px] font-medium border whitespace-nowrap shrink-0 ${colorFilter === color
+                                        className={`h-7 px-3 rounded-full flex items-center gap-2 transition-all text-[11px] font-bold border whitespace-nowrap shrink-0 ${colorFilter === color
                                             ? `ring-2 ring-offset-1 ring-slate-400 border-transparent shadow-sm`
-                                            : 'border-slate-200 hover:scale-105 dark:border-slate-700 bg-white dark:bg-slate-800'
+                                            : 'border-slate-200 hover:border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800'
                                             }`}
                                         title={`Filter: ${label}`}
-                                        style={colorFilter === color ? { backgroundColor: color, color: '#000' } : {}}
+                                        style={colorFilter === color ? { backgroundColor: color, color: '#fff' } : {}}
                                     >
-                                        <div className="w-2.5 h-2.5 rounded-full border border-black/10 shadow-sm" style={{ backgroundColor: color }} />
-                                        <span className={colorFilter === color ? 'font-bold' : 'text-slate-600 dark:text-slate-300'}>{label}</span>
+                                        <div
+                                            className="w-2.5 h-2.5 rounded-full border border-black/10 shadow-sm"
+                                            style={{ backgroundColor: colorFilter === color ? '#fff' : color }}
+                                        />
+                                        <span>{label}</span>
                                     </button>
                                 ))}
                                 {colorFilter && (
                                     <button
                                         onClick={() => setColorFilter(null)}
-                                        className="text-xs text-slate-400 hover:text-slate-600 px-1 dark:text-slate-500 dark:hover:text-slate-300 whitespace-nowrap sticky right-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm"
+                                        className="h-7 px-3 text-xs font-bold text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200 transition-colors uppercase tracking-tight"
                                     >
-                                        Clear
+                                        Bersihkan
                                     </button>
                                 )}
                             </>
@@ -147,11 +143,11 @@ export function ProjectTableFilters({
             {/* Right Group: Export */}
             <button
                 onClick={handleExport}
-                className="flex shrink-0 items-center gap-2 px-3 py-1.5 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors shadow-sm text-xs sm:text-sm font-medium focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1 dark:focus:ring-offset-slate-900"
+                className="flex items-center justify-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 active:scale-95 transition-all shadow-sm text-sm font-bold focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                 title="Export to Excel"
             >
-                <Download size={16} />
-                <span className="hidden sm:inline">Export Excel</span>
+                <Download size={18} />
+                <span>Export Excel</span>
             </button>
         </div>
     );
