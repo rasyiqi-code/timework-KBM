@@ -70,6 +70,17 @@ Define strict Standard Operating Procedures (SOPs):
 -   `packages/config`: Shared configurations (eslint, typescript).
 
 ## Script Commands
--   `pnpm dev`: Start all apps in watch mode.
--   `pnpm build`: Build all apps and packages.
--   `pnpm lint`: Lint all codebases.
+-   `pnpm dev`: Mengaktifkan server pengembangan untuk semua aplikasi.
+-   `pnpm build`: Membuat bundle produksi untuk semua aplikasi dan paket.
+-   `pnpm lint`: Menjalankan analisis kode (ESLint) di seluruh monorepo.
+-   `pnpm run type-check`: Menjalankan validasi tipe data TypeScript (TSC) di seluruh monorepo menggunakan Turbo.
+
+### Menjalankan Per Paket
+Anda bisa membatasi perintah hanya untuk paket tertentu menggunakan filter Turbo:
+```bash
+# Hanya cek tipe data untuk aplikasi web
+pnpm run type-check --filter web
+
+# Hanya lint untuk paket project-service
+pnpm run lint --filter @repo/project-service
+```

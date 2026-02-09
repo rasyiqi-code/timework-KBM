@@ -72,12 +72,13 @@ export function ProjectTableRow({
         >
             {/* Project Title Column */}
             <td
-                className="px-4 py-2 md:sticky left-0 z-10 border-r border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 md:bg-transparent"
+                className="px-4 py-2 md:sticky left-0 z-20 border-r border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900"
                 style={{
                     width: colWidth,
                     minWidth: colWidth,
                     maxWidth: colWidth,
-                    backgroundColor: info?.color ? info.color + '33' : undefined
+                    // Use backgroundImage for tinting to keep the background OPAQUE
+                    backgroundImage: info?.color ? `linear-gradient(${info.color}33, ${info.color}33)` : undefined
                 }}
             >
                 <Link href={`/projects/${project.id}`} className="group block" title={project.title}>
@@ -224,7 +225,7 @@ export function ProjectTableRow({
 
             {/* Actions Column (Admin Only) */}
             {(currentUser && (currentUser.role === 'ADMIN' || currentUser.role === 'SUPER_ADMIN')) && (
-                <td className="px-4 py-2 text-right md:sticky right-0 bg-white dark:bg-slate-900 md:bg-transparent z-10 border-l border-slate-100 dark:border-slate-800">
+                <td className="px-4 py-2 text-right md:sticky right-0 bg-white dark:bg-slate-900 z-20 border-l border-slate-100 dark:border-slate-800">
                     <button
                         onClick={() => handleDelete(project.id)}
                         disabled={isPending}

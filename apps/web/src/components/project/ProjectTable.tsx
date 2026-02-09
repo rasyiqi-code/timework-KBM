@@ -328,9 +328,9 @@ export function ProjectTable({ projects: initialProjects, headers, dict, nextCur
             >
                 <table className="w-full text-left border-collapse">
                     <thead>
-                        <tr className="bg-slate-50 border-b border-slate-200 dark:bg-slate-800/50 dark:border-slate-800">
+                        <tr className="bg-white border-b border-slate-200 dark:bg-slate-900 dark:border-slate-800 sticky top-0 z-30">
                             <th
-                                className="px-4 py-2 text-xs font-black uppercase tracking-wider text-black whitespace-nowrap md:sticky left-0 bg-slate-50 z-20 dark:bg-slate-900 dark:text-slate-100 group/th relative"
+                                className="px-4 py-2 text-xs font-black uppercase tracking-wider text-black whitespace-nowrap md:sticky left-0 bg-white z-40 dark:bg-slate-900 dark:text-slate-100 group/th relative"
                                 style={{ width: colWidth, minWidth: colWidth, maxWidth: colWidth }}
                             >
                                 {dict.project.title}
@@ -366,7 +366,7 @@ export function ProjectTable({ projects: initialProjects, headers, dict, nextCur
                                 ));
                             })()}
                             {(currentUser && (currentUser.role === 'ADMIN' || currentUser.role === 'SUPER_ADMIN')) && (
-                                <th className="px-4 py-2 text-xs font-bold uppercase tracking-wider text-slate-500 text-right md:sticky right-0 bg-slate-50 z-20 dark:bg-slate-900 dark:text-slate-400">
+                                <th className="px-4 py-2 text-xs font-bold uppercase tracking-wider text-slate-500 text-right md:sticky right-0 bg-white z-40 dark:bg-slate-900 dark:text-slate-400">
                                     {dict.project.detail.settings}
                                 </th>
                             )}

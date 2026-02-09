@@ -1,6 +1,9 @@
 import type { Metadata, Viewport } from "next";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
+// Note: Geist fonts from the 'geist' package are already optimized. 
+// If preloads are unused, it might be due to late discovery in complex CSS.
+// We'll ensure they are applied cleanly.
 import "./globals.css";
 import { Navbar } from "@/components/layout/Navbar";
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
