@@ -1,4 +1,4 @@
-import { PrismaClient, Project, ProtocolItem } from '@repo/database';
+import { PrismaClient, Project, ProtocolItem, Prisma } from '@repo/database';
 import { ProjectContext } from '../types';
 import { logAction } from '../utils/audit';
 
@@ -89,7 +89,7 @@ export async function getProjectsMatrix(
                 }
             }
         }
-    } as any); // Cast to any to bypass completedBy type check until client regeneration fully propagates
+    });
 
     let nextCursor: string | undefined = undefined;
     if (projects.length > limit) {
@@ -99,8 +99,7 @@ export async function getProjectsMatrix(
 
     const originIds = new Set<string>();
     projects.forEach(p => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (p as any).items.forEach((i: any) => {
+        p.items.forEach((i) => {
             if (i.originProtocolItemId) originIds.add(i.originProtocolItemId);
         });
     });
@@ -114,15 +113,14 @@ export async function getProjectsMatrix(
         select: { id: true, title: true, order: true }
     });
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return { projects: projects as any, headers, nextCursor };
+    return { projects, headers, nextCursor };
 }
 
 export async function createFromProtocol(prisma: PrismaClient, ctx: ProjectContext, protocolId: string, title: string, metadata: Record<string, unknown> | null = null): Promise<Project> {
     if (!ctx.organizationId) throw new Error('No Organization selected');
 
     // 1. Fetch Protocol
-    const protocol: any = await prisma.protocol.findUnique({
+    const protocol = await prisma.protocol.findUnique({
         where: { id: protocolId },
         include: {
             items: {
@@ -132,7 +130,7 @@ export async function createFromProtocol(prisma: PrismaClient, ctx: ProjectConte
                     allowedFileViewers: { select: { id: true } }
                 }
             }
-        } as any
+        }
     });
 
     if (!protocol) throw new Error('Protocol not found');
@@ -174,18 +172,18 @@ export async function createFromProtocol(prisma: PrismaClient, ctx: ProjectConte
                     originProtocolItemId: pItem.id,
                     assignedToId: pItem.defaultAssignees && pItem.defaultAssignees.length > 0 ? pItem.defaultAssignees[0].id : pItem.defaultAssigneeId, // Sync legacy
                     assignees: {
-                        connect: pItem.defaultAssignees.map((u: any) => ({ id: u.id }))
+                        connect: pItem.defaultAssignees.map((u: { id: string }) => ({ id: u.id }))
                     },
                     allowedFileViewers: {
-                        connect: (pItem as any).allowedFileViewers?.map((u: any) => ({ id: u.id })) || []
+                        connect: pItem.allowedFileViewers?.map((u: { id: string }) => ({ id: u.id })) || []
                     },
                     type: pItem.type,
                     order: pItem.order,
                     requireAttachment: pItem.requireAttachment,
-                    fileAccess: (pItem as any).fileAccess,
+                    fileAccess: pItem.fileAccess,
                     color: pItem.color,
-                    metadata: pItem.metadata ?? undefined
-                } as any,
+                    metadata: (pItem.metadata as Prisma.JsonObject) ?? undefined
+                },
                 select: { id: true }
             });
             itemIdMap.set(pItem.id, createdItem.id);

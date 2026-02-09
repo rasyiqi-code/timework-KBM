@@ -2,7 +2,7 @@ import { stackServerApp } from "@/stack";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
     const user = await stackServerApp.getUser({ tokenStore: request });
 
     if (!user) {

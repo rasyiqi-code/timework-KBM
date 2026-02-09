@@ -32,6 +32,11 @@
       "cache": false
     },
     "lint": {},
+    "check-types": {
+      "dependsOn": [
+        "^build"
+      ]
+    },
     "dev": {
       "cache": false,
       "persistent": true
