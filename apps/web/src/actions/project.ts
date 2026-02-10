@@ -203,3 +203,41 @@ export async function deleteProjectItem(itemId: string) {
     revalidatePath(`/projects/${item.projectId}`);
     await emitProjectUpdate(item.projectId, "Task Deleted");
 }
+
+export async function getDeletedProjects() {
+    const admin = await requireAdmin();
+    if (!admin.organizationId) throw new Error('No Organization');
+
+    const ctx = { userId: admin.id, organizationId: admin.organizationId, role: admin.role };
+    return await projectService.getDeletedProjects(ctx);
+}
+
+export async function hardDeleteProject(projectId: string) {
+    const admin = await requireAdmin();
+    if (!admin.organizationId) throw new Error('No Organization');
+
+    const ctx = { userId: admin.id, organizationId: admin.organizationId, role: admin.role };
+
+    await projectService.hardDelete(ctx, projectId);
+
+    const { emitProjectListUpdate } = await import('@/lib/socket-server');
+    await emitProjectListUpdate(ctx.organizationId, "Project Permanently Deleted");
+
+    revalidatePath('/projects');
+    revalidatePath('/admin/projects/trash');
+}
+
+export async function restoreProject(projectId: string) {
+    const admin = await requireAdmin();
+    if (!admin.organizationId) throw new Error('No Organization');
+
+    const ctx = { userId: admin.id, organizationId: admin.organizationId, role: admin.role };
+
+    await projectService.restoreProject(ctx, projectId);
+
+    const { emitProjectListUpdate } = await import('@/lib/socket-server');
+    await emitProjectListUpdate(ctx.organizationId, "Project Restored");
+
+    revalidatePath('/projects');
+    revalidatePath('/admin/projects/trash');
+}

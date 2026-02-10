@@ -324,3 +324,37 @@ export async function hardDeleteProject(prisma: PrismaClient, ctx: ProjectContex
         where: { id: projectId }
     });
 }
+
+export async function getDeletedProjects(prisma: PrismaClient, ctx: ProjectContext): Promise<(Project & { _count: { items: number } })[]> {
+    const isAdmin = ctx.role === 'ADMIN' || ctx.role === 'SUPER_ADMIN';
+    if (!isAdmin) throw new Error('Unauthorized: Admin access required');
+
+    return await prisma.project.findMany({
+        where: {
+            organizationId: ctx.organizationId,
+            deletedAt: { not: null }
+        },
+        orderBy: { deletedAt: 'desc' },
+        include: {
+            _count: { select: { items: true } }
+        }
+    });
+}
+
+export async function restoreProject(prisma: PrismaClient, ctx: ProjectContext, projectId: string): Promise<void> {
+    const isAdmin = ctx.role === 'ADMIN' || ctx.role === 'SUPER_ADMIN';
+    if (!isAdmin) throw new Error('Unauthorized: Admin access required');
+
+    const project = await prisma.project.findUnique({
+        where: { id: projectId },
+        select: { organizationId: true }
+    });
+
+    if (!project) throw new Error('Project not found');
+    if (project.organizationId !== ctx.organizationId) throw new Error('Unauthorized');
+
+    await prisma.project.update({
+        where: { id: projectId },
+        data: { deletedAt: null }
+    });
+}

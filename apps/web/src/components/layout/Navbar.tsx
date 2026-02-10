@@ -72,9 +72,14 @@ export function Navbar({ dict, locale, signInUrl, currentUser, canSeeFileManager
                         Notes
                     </Link>
                     {(currentUser?.role === 'ADMIN' || currentUser?.role === 'SUPER_ADMIN') && (
-                        <Link href="/admin/protocols" className="px-3 py-1.5 rounded hover:bg-slate-100 hover:text-slate-900 transition-all dark:hover:bg-slate-800 dark:hover:text-slate-100">
-                            {dict.nav.protocols}
-                        </Link>
+                        <>
+                            <Link href="/admin/protocols" className={`px-3 py-1.5 rounded transition-all ${pathname === '/admin/protocols' ? 'bg-[#cd1717]/10 text-[#cd1717] font-bold' : 'hover:bg-slate-100 hover:text-slate-900 dark:hover:bg-slate-800 dark:hover:text-slate-100'}`}>
+                                {dict.nav.protocols}
+                            </Link>
+                            <Link href="/admin/projects/trash" className={`px-3 py-1.5 rounded transition-all ${pathname === '/admin/projects/trash' ? 'bg-[#cd1717]/10 text-[#cd1717] font-bold' : 'hover:bg-slate-100 hover:text-slate-900 dark:hover:bg-slate-800 dark:hover:text-slate-100'}`}>
+                                {dict.nav.trash || 'Sampah'}
+                            </Link>
+                        </>
                     )}
 
                     {currentUser?.role === 'SUPER_ADMIN' && (

@@ -55,6 +55,14 @@ export class ProjectService {
         return ProjectModule.getProjectsMatrix(this.prisma, ctx, limit, cursor);
     }
 
+    async getDeletedProjects(ctx: ProjectContext): Promise<(Project & { _count: { items: number } })[]> {
+        return ProjectModule.getDeletedProjects(this.prisma, ctx);
+    }
+
+    async restoreProject(ctx: ProjectContext, projectId: string): Promise<void> {
+        return ProjectModule.restoreProject(this.prisma, ctx, projectId);
+    }
+
     async getById(ctx: ProjectContext, id: string): Promise<Project & { protocol: import('@repo/database').Protocol | null, items: (ProjectItem & { dependsOn: (ItemDependency & { prerequisite: ProjectItem })[], requiredBy: ItemDependency[], assignees: { id: string, name: string | null }[], files: { id: string; name: string; url: string; size: number; createdAt: Date; type: string; uploadedBy: { name: string | null; email: string } }[] })[] } | null> {
         if (!ctx.organizationId) return null;
 

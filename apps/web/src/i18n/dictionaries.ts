@@ -28,6 +28,7 @@ export const dictionaries = {
             projectForm: 'Formulir Alur Naskah',
             insight: 'Insight',
             fileManager: 'File Manager',
+            trash: 'Tempat Sampah',
         },
         protocol: {
             titlePlaceholder: 'Ketik judul tugas baru...',
@@ -261,6 +262,7 @@ export const dictionaries = {
             projectForm: 'Project Form',
             insight: 'Insight',
             fileManager: 'File Manager',
+            trash: 'Trash',
         },
         protocol: {
             titlePlaceholder: 'Type new task title...',
