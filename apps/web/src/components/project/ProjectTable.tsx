@@ -3,7 +3,7 @@
 import { format } from 'date-fns';
 import { type Dictionary } from '@/i18n/dictionaries';
 import { Loader2, Info } from 'lucide-react';
-import { deleteProject, getProjectsMatrix } from '@/actions/project';
+import { deleteProject } from '@/actions/project';
 import { toast } from 'sonner';
 import { useState, useTransition, useEffect, useRef } from 'react';
 import * as XLSX from 'xlsx';
@@ -49,10 +49,21 @@ export function ProjectTable({ projects: initialProjects, headers, dict, nextCur
     const [projects, setProjects] = useState(initialProjects);
     const [nextCursor, setNextCursor] = useState(initialNextCursor);
 
-    // Sync state with props on router.refresh()
+    // Sync state with props on router.refresh() (Realtime socket updates)
     useEffect(() => {
-        setProjects(initialProjects);
-        setNextCursor(initialNextCursor);
+        setProjects(prev => {
+            // Merge initialProjects (first page) with currently loaded projects
+            // We want to update any existing projects that are in the new first page,
+            // while preserving projects that were loaded via "Muat Lebih Banyak".
+            const initialIds = new Set(initialProjects.map(p => p.id));
+            const loadedMore = prev.filter(p => !initialIds.has(p.id));
+            return [...initialProjects, ...loadedMore];
+        });
+        // Only reset nextCursor if initialNextCursor is provided (first page load)
+        // If it's a refresh of the first page, the cursor for "loading more" shouldn't necessarily change 
+        // unless the first page now covers what was previously in the second page.
+        // For simplicity, we keep the previous nextCursor if we already have one from loading more.
+        setNextCursor(prev => prev || initialNextCursor);
     }, [initialProjects, initialNextCursor]);
     const [isPending, startTransition] = useTransition();
     const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -273,7 +284,10 @@ export function ProjectTable({ projects: initialProjects, headers, dict, nextCur
 
         setIsLoadingMore(true);
         try {
-            const { projects: newProjects, nextCursor: newCursor } = await getProjectsMatrix(12, nextCursor);
+            const res = await fetch(`/api/projects/matrix?limit=12&cursor=${nextCursor}`);
+            if (!res.ok) throw new Error();
+            const { projects: newProjects, nextCursor: newCursor } = await res.json();
+
             setProjects(prev => [...prev, ...newProjects as unknown as ProjectTableProps['projects']]);
             setNextCursor(newCursor);
         } catch {
