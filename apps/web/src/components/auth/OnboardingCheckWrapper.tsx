@@ -6,8 +6,8 @@ export async function OnboardingCheckWrapper() {
     try {
         user = await getCurrentUser();
     } catch (e) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const err = e as any;
+        // Next.js error memiliki properti `digest` untuk identifikasi internal error
+        const err = e as { digest?: string };
         if (err.digest === 'DYNAMIC_SERVER_USAGE') {
             throw err;
         }

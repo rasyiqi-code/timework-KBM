@@ -48,3 +48,23 @@ export const getProjectColor = (project: { items: { status: string, updatedAt: D
     }
     return null;
 };
+
+/**
+ * Sanitizes a string to be used as an Excel sheet name.
+ * Excel sheet names:
+ * 1. Cannot exceed 31 characters.
+ * 2. Cannot contain these characters: : \ / ? * [ ]
+ * 3. Cannot be empty.
+ * 4. Cannot start or end with a single quote (although multiple are allowed, we'll just trim).
+ */
+export const sanitizeSheetName = (name: string): string => {
+    if (!name) return 'Sheet';
+
+    // Replace illegal characters with space
+    let sanitized = name.replace(/[:\\/?*\[\]]/g, ' ');
+
+    // Trim whitespace and single quotes
+    sanitized = sanitized.trim().replace(/^'|'$/g, '');
+
+    return sanitized || 'Sheet';
+};

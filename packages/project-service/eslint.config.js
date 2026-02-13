@@ -1,6 +1,3 @@
-// @ts-check
-/* eslint-disable @typescript-eslint/no-require-imports */
-
 const tseslint = require("typescript-eslint");
 
 module.exports = tseslint.config(
@@ -10,6 +7,8 @@ module.exports = tseslint.config(
     },
     {
         rules: {
+            // CJS config memerlukan require(), maka rule ini dimatikan
+            "@typescript-eslint/no-require-imports": "off",
             "@typescript-eslint/no-explicit-any": "warn",
             "@typescript-eslint/no-unused-vars": "warn"
         }

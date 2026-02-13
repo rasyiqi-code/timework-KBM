@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/db';
 
-export async function seedOrganizationData(organizationId: string, userId: string) {
+export async function seedOrganizationData(organizationId: string) {
     console.log(`Seeding data for Organization: ${organizationId}`);
 
     // 1. Create Default Protocol (SOP Template)
@@ -27,11 +27,10 @@ export async function seedOrganizationData(organizationId: string, userId: strin
     // const project = await prisma.project.create({ ... });
 
     // 3. Seed KBM Data (Protocol Only)
-    await seedKBMData(organizationId, userId);
+    await seedKBMData(organizationId);
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export async function seedKBMData(organizationId: string, _currentUserId: string) {
+export async function seedKBMData(organizationId: string) {
     console.log(`Seeding KBM Specific Data for Org: ${organizationId}`);
 
     // 1. Create KBM Protocol

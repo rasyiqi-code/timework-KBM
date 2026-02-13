@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import { Loader2, Mail, Shield, Key, Plus, CheckCircle2, AlertCircle, Smartphone } from 'lucide-react';
 import { createTOTPKeyURI, verifyTOTP } from "@oslojs/otp";
 import QRCode from "qrcode";
+import Image from "next/image";
 
 export function EmailsAndAuth() {
     const user = useUser();
@@ -415,8 +416,7 @@ function MFAForm({ onClose }: { onClose: () => void }) {
             <div className="flex flex-col items-center gap-4">
                 {qrCodeUrl ? (
                     <div className="p-4 bg-white rounded-xl border border-border shadow-sm">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={qrCodeUrl} alt="2FA QR Code" width={180} height={180} />
+                        <Image src={qrCodeUrl} alt="2FA QR Code" width={180} height={180} unoptimized />
                     </div>
                 ) : (
                     <div className="w-[180px] h-[180px] flex items-center justify-center bg-muted/20 rounded-xl">

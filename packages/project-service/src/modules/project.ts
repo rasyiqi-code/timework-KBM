@@ -151,8 +151,8 @@ export async function createFromProtocol(prisma: PrismaClient, ctx: ProjectConte
                 status: 'ACTIVE',
                 organizationId: ctx.organizationId,
                 protocolId: protocolId,
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                metadata: metadata as any
+                // Gunakan Prisma.InputJsonValue untuk konversi metadata ke format JSON Prisma
+                metadata: metadata as Prisma.InputJsonValue
             }
         });
 

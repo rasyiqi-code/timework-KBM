@@ -24,14 +24,14 @@ async function main() {
     // Members
     const members = await prisma.organizationMember.findMany();
     for (const m of members) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        if (!orgIds.has(m.organizationId as any)) { // Casting to avoid complex type issues if schema changed
+        if (!orgIds.has(m.organizationId)) {
             console.log(`Deleting invalid member ${m.id}`);
             try {
                 await prisma.organizationMember.delete({ where: { id: m.id } });
                 fixedCount++;
-            } catch (e: any) {
-                if (e.code !== 'P2025') console.error(e);
+            } catch (e: unknown) {
+                const err = e as { code?: string };
+                if (err.code !== 'P2025') console.error(e);
             }
         }
     }
@@ -44,8 +44,9 @@ async function main() {
             try {
                 await prisma.project.delete({ where: { id: p.id } });
                 fixedCount++;
-            } catch (e: any) {
-                if (e.code !== 'P2025') console.error(e);
+            } catch (e: unknown) {
+                const err = e as { code?: string };
+                if (err.code !== 'P2025') console.error(e);
             }
         }
     }
@@ -60,8 +61,9 @@ async function main() {
                 await prisma.protocol.delete({ where: { id: p.id } });
                 validProtocolIds.delete(p.id);
                 fixedCount++;
-            } catch (e: any) {
-                if (e.code !== 'P2025') console.error(e);
+            } catch (e: unknown) {
+                const err = e as { code?: string };
+                if (err.code !== 'P2025') console.error(e);
             }
         }
     }
@@ -74,8 +76,9 @@ async function main() {
             try {
                 await prisma.protocolItem.delete({ where: { id: item.id } });
                 fixedCount++;
-            } catch (e: any) {
-                if (e.code !== 'P2025') console.error(e);
+            } catch (e: unknown) {
+                const err = e as { code?: string };
+                if (err.code !== 'P2025') console.error(e);
             }
         }
     }
@@ -92,8 +95,9 @@ async function main() {
             try {
                 await prisma.projectItem.delete({ where: { id: item.id } });
                 fixedCount++;
-            } catch (e: any) {
-                if (e.code !== 'P2025') console.error(e);
+            } catch (e: unknown) {
+                const err = e as { code?: string };
+                if (err.code !== 'P2025') console.error(e);
             }
         }
     }
@@ -106,8 +110,9 @@ async function main() {
             try {
                 await prisma.projectHistory.delete({ where: { id: h.id } });
                 fixedCount++;
-            } catch (e: any) {
-                if (e.code !== 'P2025') console.error(e);
+            } catch (e: unknown) {
+                const err = e as { code?: string };
+                if (err.code !== 'P2025') console.error(e);
             }
         }
     }

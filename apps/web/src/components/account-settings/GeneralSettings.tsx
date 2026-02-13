@@ -12,10 +12,10 @@ export function GeneralSettings() {
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setMounted(true);
+        // Gunakan setTimeout agar tidak langsung setState di effect body
+        setTimeout(() => setMounted(true), 0);
         const savedLang = localStorage.getItem('timework-language');
-        if (savedLang) setLang(savedLang);
+        if (savedLang) setTimeout(() => setLang(savedLang), 0);
     }, []);
 
     const handleLangChange = (val: string) => {

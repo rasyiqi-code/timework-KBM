@@ -117,7 +117,8 @@ export async function updateItemStatus(prisma: PrismaClient, ctx: ProjectContext
     }
 
     const now = new Date();
-    const dataUpdate: Prisma.ProjectItemUpdateInput = { status: newStatus };
+    // Gunakan UncheckedUpdateInput agar bisa mengakses scalar field `completedById` langsung
+    const dataUpdate: Prisma.ProjectItemUncheckedUpdateInput = { status: newStatus };
 
     if (newStatus === 'DONE') {
         dataUpdate.endDate = now;
@@ -133,15 +134,13 @@ export async function updateItemStatus(prisma: PrismaClient, ctx: ProjectContext
         // If we are reopening, clear the end date and completer
         if (itemToCheck.status === 'DONE' || itemToCheck.status === 'SKIPPED') {
             dataUpdate.endDate = null;
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (dataUpdate as any).completedById = null;
+            dataUpdate.completedById = null;
         }
     }
 
     if (newStatus === 'DONE' || newStatus === 'SKIPPED') {
-        // Record who completed it
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (dataUpdate as any).completedById = ctx.userId;
+        // Catat siapa yang menyelesaikan task
+        dataUpdate.completedById = ctx.userId;
     }
 
     const item = await prisma.projectItem.update({

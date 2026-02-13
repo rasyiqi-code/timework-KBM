@@ -9,7 +9,7 @@ import { useState, useTransition, useEffect, useRef } from 'react';
 import * as XLSX from 'xlsx';
 
 import { useProjectListRealtime } from '@/hooks/useProjectListRealtime';
-import { getProjectColor } from './utils';
+import { getProjectColor, sanitizeSheetName } from './utils';
 import { SimpleTooltip } from '../ui/simple-tooltip';
 import { ProjectTableFilters } from './ProjectTableFilters';
 import { ProjectTableRow } from './ProjectTableRow';
@@ -19,6 +19,8 @@ export interface ProjectTableProps {
         id: string;
         title: string;
         status: string;
+        /** ID protokol asal project, digunakan untuk filter dan export */
+        protocolId?: string | null;
         items: {
             id: string;
             title: string;
@@ -123,11 +125,8 @@ export function ProjectTable({ projects: initialProjects, headers, dict, nextCur
 
         const matchesStatus = statusFilter === 'ALL' || effectiveStatus === statusFilter;
 
-        // Protocol Filter (Check protocolId if available, or try to infer? Assuming protocolId exists on project or strict typing will fail)
-        // We need to cast project to any or update type definition to include protocolId
-        // The projects prop type definition below needs update.
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const matchesProtocol = protocolFilter === 'ALL' || (project as any).protocolId === protocolFilter;
+        // Protocol Filter: gunakan protocolId yang sudah ada di interface
+        const matchesProtocol = protocolFilter === 'ALL' || project.protocolId === protocolFilter;
 
         return matchesSearch && matchesStatus && matchesProtocol;
     }).sort((a, b) => {
@@ -155,10 +154,8 @@ export function ProjectTable({ projects: initialProjects, headers, dict, nextCur
             protocols?.forEach(p => protocolNames.set(p.id, p.name));
 
             filteredProjects.forEach(p => {
-                // If protocolId is missing, group under 'Unknown' or 'Other'
-                // We cast p as any because protocolId isn't in the strict type yet, but backend sends it.
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const pId = (p as any).protocolId || 'OTHER';
+                // Gunakan protocolId dari interface yang sudah diperbarui
+                const pId = p.protocolId || 'OTHER';
                 if (!projectsByProtocol.has(pId)) {
                     projectsByProtocol.set(pId, []);
                 }
@@ -192,8 +189,8 @@ export function ProjectTable({ projects: initialProjects, headers, dict, nextCur
                     const done = project.items.filter(i => i.status === 'DONE' || i.status === 'SKIPPED').length;
                     const percent = total > 0 ? Math.round((done / total) * 100) : 0;
 
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    const row: any = {
+                    /** Tipe data baris export Excel */
+                    const row: Record<string, string> = {
                         'Project Title': project.title,
                         'Status': dict.project.status[project.status as keyof typeof dict.project.status] || project.status,
                         'Progress': `${percent}%`,
@@ -229,11 +226,11 @@ export function ProjectTable({ projects: initialProjects, headers, dict, nextCur
 
                 // Sheet Name
                 let sheetName = protocolNames.get(protocolId) || (protocolId === 'OTHER' ? 'Custom Projects' : `SOP ${sheetCount + 1}`);
-                // Excel Sheet Name limit 31 chars
-                if (sheetName.length > 31) sheetName = sheetName.substring(0, 31);
-                // Ensure unique sheet names
+                sheetName = sanitizeSheetName(sheetName);
+
+                // Ensure unique sheet names if sanitization caused overlap
                 if (wb.SheetNames.includes(sheetName)) {
-                    sheetName = `${sheetName.substring(0, 28)} ${sheetCount}`;
+                    sheetName = sanitizeSheetName(`${sheetName} ${sheetCount + 1}`);
                 }
 
                 const ws = XLSX.utils.json_to_sheet(exportData);
@@ -321,13 +318,7 @@ export function ProjectTable({ projects: initialProjects, headers, dict, nextCur
                 statusFilter={statusFilter}
                 setStatusFilter={setStatusFilter}
                 colorFilter={colorFilter}
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                setColorFilter={setColorFilter as any} // Cast because logic uses prev state and our interface was simplified? No, wait. 
-                // setColorFilter in ProjectsTableFilters expects (filter: string | null) => void.
-                // useState returns Dispatch<SetStateAction<string | null>> which is compatible with value setter but not generic enough if we pass function. 
-                // But in Filters we use `setColorFilter(val)` or `setColorFilter(null)`. We don't use functional updates in the Filters UI logic itself except implicitly?
-                // Actually in Filters UI: `setColorFilter(prev => ...)` is NOT used. `onClick={() => setColorFilter(colorFilter === color ? null : color)}` is used.
-                // Use `colorFilter` prop value for logic.
+                setColorFilter={(val: string | null) => setColorFilter(val)}
 
                 protocols={protocols}
                 projects={projects}

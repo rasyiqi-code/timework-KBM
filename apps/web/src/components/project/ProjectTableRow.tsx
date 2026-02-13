@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { format } from 'date-fns';
 import { Trash2, Paperclip, Lock } from 'lucide-react';
 import { type Dictionary } from '@/i18n/dictionaries';
+import { useState, useEffect } from 'react';
 import { getProjectColor } from './utils';
 
 // Define the structure of headers
@@ -32,8 +33,8 @@ interface Project {
     title: string;
     status: string;
     items: ProjectItem[];
-    // Include protocolId just in case
-    protocolId?: string;
+    // protocolId bisa null jika project belum terhubung ke protocol
+    protocolId?: string | null;
 }
 
 interface ProjectTableRowProps {
@@ -57,6 +58,12 @@ export function ProjectTableRow({
     handleDelete,
     isPending
 }: ProjectTableRowProps) {
+    const [mounted, setMounted] = useState(false);
+    useEffect(() => {
+        const timer = setTimeout(() => setMounted(true), 0);
+        return () => clearTimeout(timer);
+    }, []);
+
     // Calculate Status dynamically
     const total = project.items.length;
     const done = project.items.filter(i => i.status === 'DONE' || i.status === 'SKIPPED').length;
@@ -64,6 +71,44 @@ export function ProjectTableRow({
     const effectiveStatus = percent === 100 ? 'COMPLETED' : project.status;
 
     const info = getProjectColor(project);
+
+    if (!mounted) {
+        // Return a skeleton or null during hydration to avoid mismatch
+        // We'll return the same structure but without time-sensitive data
+        return (
+            <tr
+                className="hover:shadow-sm transition-all border-b border-slate-100 dark:border-slate-800"
+                style={info?.color ? { backgroundColor: info.color + '33' } : {}}
+            >
+                <td
+                    className="px-4 py-2 md:sticky left-0 z-20 border-r border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900"
+                    style={{
+                        width: colWidth,
+                        minWidth: colWidth,
+                        maxWidth: colWidth,
+                        backgroundImage: info?.color ? `linear-gradient(${info.color}33, ${info.color}33)` : undefined
+                    }}
+                >
+                    <div className="flex items-center gap-2 w-full">
+                        <span className="font-bold text-sm text-slate-900 dark:text-white truncate">
+                            {project.title}
+                        </span>
+                    </div>
+                </td>
+                <td className="px-4 py-2 border-r border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900">
+                    <div className="w-24 h-8 bg-slate-100 dark:bg-slate-800 animate-pulse rounded"></div>
+                </td>
+                {headers.map((h, idx) => (
+                    <td key={idx} className="px-4 py-2 border-l border-slate-100 dark:border-slate-800">
+                        <div className="h-4 w-12 bg-slate-100 dark:bg-slate-800 animate-pulse rounded"></div>
+                    </td>
+                ))}
+                {(currentUser && (currentUser.role === 'ADMIN' || currentUser.role === 'SUPER_ADMIN')) && (
+                    <td className="px-4 py-2 border-l border-slate-100 dark:border-slate-800"></td>
+                )}
+            </tr>
+        );
+    }
 
     return (
         <tr

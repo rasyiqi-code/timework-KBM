@@ -9,12 +9,19 @@ import { usePathname } from 'next/navigation';
 import { Dictionary } from '@/i18n/dictionaries'; // Assuming Dictionary type is needed for props
 import { CheckSquare } from 'lucide-react';
 
+/** Tipe data user yang dibutuhkan oleh Navbar */
+interface NavbarUser {
+    name: string | null;
+    role: string;
+    organization?: { name: string } | null;
+}
+
 // Navbar now expects dict and locale as props, as it's a client component
 export function Navbar({ dict, locale, signInUrl, currentUser, canSeeFileManager }: {
     dict: Dictionary,
     locale: string,
     signInUrl: string,
-    currentUser: any, // eslint-disable-line @typescript-eslint/no-explicit-any
+    currentUser: NavbarUser | null,
     canSeeFileManager?: boolean
 }) {
     const pathname = usePathname();

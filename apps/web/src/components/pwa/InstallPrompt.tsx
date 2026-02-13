@@ -4,34 +4,43 @@ import { useState, useEffect } from 'react';
 import { X, Download } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
+/**
+ * Interface untuk event `beforeinstallprompt` yang merupakan PWA-specific browser API.
+ * Belum masuk ke standard TypeScript DOM lib, jadi kita definisikan sendiri.
+ */
+interface BeforeInstallPromptEvent extends Event {
+    prompt(): Promise<void>;
+    userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
+}
+
+/** Extension untuk navigator iOS Safari yang memiliki properti `standalone` */
+interface NavigatorStandalone extends Navigator {
+    standalone?: boolean;
+}
+
 export function InstallPrompt() {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+    const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
     const [showPrompt, setShowPrompt] = useState(false);
     const [isStandalone, setIsStandalone] = useState(false);
 
     useEffect(() => {
-        // Check if running in standalone mode (PWA)
+        // Cek apakah berjalan dalam standalone mode (PWA)
         const isInStandaloneMode = window.matchMedia('(display-mode: standalone)').matches
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            || (window.navigator as any).standalone
+            || (window.navigator as NavigatorStandalone).standalone
             || document.referrer.includes('android-app://');
 
-        // Avoid direct state update in effect if possible, but here we need it for hydration match
-        // We use a small timeout to avoid the "synchronous update" warning if needed, or just suppress
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setIsStandalone(isInStandaloneMode);
+        // Gunakan setTimeout agar tidak langsung setState di effect body
+        setTimeout(() => setIsStandalone(isInStandaloneMode), 0);
 
         if (isInStandaloneMode) return;
 
-        // Listen for the beforeinstallprompt event
+        // Listen untuk event beforeinstallprompt
         const handleBeforeInstallPrompt = (e: Event) => {
-            // Prevent the mini-infobar from appearing on mobile
+            // Prevent mini-infobar
             e.preventDefault();
-            // Stash the event so it can be triggered later.
-            setDeferredPrompt(e);
-            // Update UI notify the user they can install the PWA
-            // Only show if not already dismissed in this session (optional, simpler to just show)
+            // Simpan event untuk trigger nanti
+            setDeferredPrompt(e as BeforeInstallPromptEvent);
+            // Tampilkan prompt instalasi
             setShowPrompt(true);
         };
 

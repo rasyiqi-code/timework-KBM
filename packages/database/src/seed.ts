@@ -1,4 +1,4 @@
-import { PrismaClient, ProtocolItemType } from '@prisma/client'
+import { PrismaClient, ProtocolItemType, Prisma } from '@prisma/client'
 
 const prisma = new PrismaClient()
 
@@ -437,7 +437,7 @@ async function main() {
                 name: def.name,
                 description: def.description,
                 organizationId: kbmOrg.id,
-                formFields: selectedFormFields as any,
+                formFields: selectedFormFields as Prisma.InputJsonValue,
                 titleFormat: '{author} - {bookTitle}'
             }
         })
@@ -445,8 +445,7 @@ async function main() {
         // Recursive creation
         let globalOrder = 0
 
-        // Let's use a robust Recursive Sibling linker.
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        // Helper rekursif untuk membuat item beserta dependensi antar-sibling
         const createItemsHelpers = async (items: SeedItem[], parentId: string | null = null, lastSiblingId: string | null = null) => {
             let localPrevId = lastSiblingId;
 

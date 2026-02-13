@@ -59,9 +59,12 @@ export function FormBuilder({ protocolId, initialFields = [], initialTitleFormat
 
         setIsSaving(true);
         try {
-            // Strip _id before saving
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            const cleanFields = fields.map(({ _id, ...rest }) => rest);
+            // Strip _id sebelum menyimpan ke backend
+            const cleanFields = fields.map((field) => {
+                const { _id: _unused, ...rest } = field;
+                void _unused;
+                return rest;
+            });
 
             await updateProtocolForm(protocolId, cleanFields, titleFormat);
             toast.success(dict.validation.success);

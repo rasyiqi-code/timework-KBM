@@ -136,8 +136,8 @@ const getCurrentUserImpl = async () => {
             });
         }
     } catch (error) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const e = error as any;
+        // Prisma error memiliki properti `code` untuk identifikasi jenis error
+        const e = error as { code?: string };
         if (e.code === 'P2002') {
             // Race condition handle
             finalDbUser = await prisma.user.findUnique({

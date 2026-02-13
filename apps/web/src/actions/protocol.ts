@@ -5,7 +5,14 @@ import { Prisma } from '@repo/database';
 import { revalidatePath } from 'next/cache';
 import { requireAdmin, getCurrentUser } from '@/actions/auth';
 
-export async function getProtocols() {
+export type ProtocolWithAllowedCreators = Prisma.ProtocolGetPayload<{
+  include: {
+    allowedCreators: { select: { id: true } },
+    _count: { select: { items: true } }
+  }
+}>;
+
+export async function getProtocols(unrestricted = false): Promise<ProtocolWithAllowedCreators[]> {
   const user = await getCurrentUser();
   if (!user || !user.organizationId) return []; // Or throw
 
@@ -21,9 +28,11 @@ export async function getProtocols() {
   });
 
   // Filter based on allowedCreators
+  // If unrestricted is true -> Return all (useful for dashboard filters)
   // If allowedCreators is empty -> Everyone can see
   // If populated -> Only those in the list OR Admins can see
   return protocols.filter(p => {
+    if (unrestricted) return true;
     if (user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') return true;
     if (p.allowedCreators.length === 0) return true;
     return p.allowedCreators.some(creator => creator.id === user.id);
@@ -189,9 +198,7 @@ export async function addProtocolItem(protocolId: string, formData: FormData) {
       parentId: validated.parentId,
       requireAttachment: validated.requireAttachment,
       fileAccess: validated.fileAccess,
-      defaultAssignee: validated.defaultAssigneeId
-        ? { connect: { id: validated.defaultAssigneeId } }
-        : undefined,
+      defaultAssigneeId: validated.defaultAssigneeId,
       defaultAssignees: validated.defaultAssigneeIds && validated.defaultAssigneeIds.length > 0
         ? { connect: validated.defaultAssigneeIds.map(id => ({ id })) }
         : undefined,
@@ -199,7 +206,7 @@ export async function addProtocolItem(protocolId: string, formData: FormData) {
         ? { connect: validated.allowedFileViewerIds.map(id => ({ id })) }
         : undefined,
       color: validated.color
-    } as any // eslint-disable-line @typescript-eslint/no-explicit-any
+    }
   });
 
   revalidatePath(`/admin/protocols/${protocolId}`);
@@ -389,9 +396,7 @@ export async function updateProtocolItem(itemId: string, formData: FormData) {
       type: validated.type,
       requireAttachment: validated.requireAttachment,
       fileAccess: validated.fileAccess,
-      defaultAssignee: validated.defaultAssigneeId
-        ? { connect: { id: validated.defaultAssigneeId } }
-        : { disconnect: true },
+      defaultAssigneeId: validated.defaultAssigneeId,
       defaultAssignees: validated.defaultAssigneeIds
         ? { set: validated.defaultAssigneeIds.map(id => ({ id })) }
         : undefined,
@@ -400,7 +405,7 @@ export async function updateProtocolItem(itemId: string, formData: FormData) {
         : undefined,
       color: validated.color,
       metadata: validated.metadata
-    } as any // eslint-disable-line @typescript-eslint/no-explicit-any
+    }
   });
 
   revalidatePath(`/admin/protocols/${item.protocolId}`);
