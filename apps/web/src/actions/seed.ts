@@ -12,7 +12,7 @@ export async function loadDemoDataAction() {
     }
 
     try {
-        await seedKBMData(user.organizationId, user.id);
+        await seedKBMData(user.organizationId);
         revalidatePath('/admin/protocols');
         revalidatePath('/account-settings/general');
         return { success: true };

@@ -8,7 +8,7 @@ export const ProtocolSchema = z.object({
 });
 
 export const ProtocolItemSchema = z.object({
-    title: z.string().min(1, "Title is required").max(200),
+    title: z.string().min(1, "Title is required").max(1000),
     duration: z.coerce.number().min(0).default(1),
     defaultAssigneeId: z.string().optional().nullable(),
     defaultAssigneeIds: z.array(z.string()).optional(),
@@ -23,7 +23,7 @@ export const ProtocolItemSchema = z.object({
 });
 
 export const ProjectSchema = z.object({
-    title: z.string().min(1, "Title is required").max(255),
+    title: z.string().min(1, "Title is required").max(1000),
     description: z.string().optional().nullable(),
 });
 
